@@ -1,6 +1,5 @@
-Freedom_app
-This project is a mobile-first social media web application.
-
+Privyra Saas
+This is a secured file transfer medium Saas model
 Project structure:
 
 my-social-app/
