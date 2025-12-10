@@ -14,14 +14,14 @@ function Login() {
     e.preventDefault();
     const newErrors = {};
 
-    if (!username) newErrors.username = "Hey, you gotta tell me your username! 😅";
+    if (!username) newErrors.username = "Username is required";
     else if (!validateUsername(username))
-      newErrors.username = "Hmm… that username looks sus. Keep it alphanumeric!";
+      newErrors.username = "Username must be alphanumeric";
 
-    if (!password) newErrors.password = "Password? Don’t leave it blank! 🔑";
+    if (!password) newErrors.password = "Password cannot be empty";
     else if (!validatePassword(password))
       newErrors.password =
-        "Whoa! Your password needs 8–12 chars, a capital letter, lowercase, a number & a special symbol. 😎";
+        "Password must be 8–12 characters with upper, lower, number & special character";
 
     setError(newErrors);
 
@@ -32,12 +32,12 @@ function Login() {
       );
 
       if (!userExists) {
-        setError({ login: "Invalid credentials ❌" });
+        setError({ login: "Invalid username or password" });
         return;
       }
 
-      login(username); // ✅ update context AND localStorage
-      navigate("/"); // ✅ redirect to homepage
+      login(username);
+      navigate("/");
     }
   };
 
@@ -45,41 +45,71 @@ function Login() {
     <div style={{ height: "100vh", display: "flex", justifyContent: "center", alignItems: "center", flexDirection: "column", padding: "1rem", backgroundColor: "#eef2ff" }}>
       <div style={{ textAlign: "center", marginBottom: "1.5rem" }}>
         <h3 style={{ fontSize: "1.25rem", marginBottom: "0.5rem" }}>
-          Welcome back to the world of your Freedom & Anonymity
+          Welcome back to Privyra
         </h3>
         <p style={{ fontSize: "0.95rem", color: "#555" }}>
-          Log in to share your stories, confessions, and moments without fear.
+          Log in to securely access your Privyra account.
         </p>
       </div>
 
       <div className="login-container" style={{ width: "100%", maxWidth: "400px", padding: "2rem", border: "1px solid #ddd", borderRadius: "8px", backgroundColor: "#f9f9f9" }}>
-        <h2 style={{ textAlign: "center", marginBottom: "1rem" }}>Login to your Freedom world 😊</h2>
+        <h2 style={{ textAlign: "center", marginBottom: "1rem" }}>
+          Login to Your Privyra Account
+        </h2>
 
         <form onSubmit={handleSubmit}>
           <div style={{ marginBottom: "1rem" }}>
             <label>Username</label>
-            <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Enter your username" style={{ width: "100%", padding: "0.5rem", borderRadius: "4px" }} />
-            {error.username && <p style={{ color: "red", marginTop: "0.25rem" }}>{error.username}</p>}
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="Enter your username"
+              style={{ width: "100%", padding: "0.5rem", borderRadius: "4px" }}
+            />
+            {error.username && (
+              <p style={{ color: "red", marginTop: "0.25rem" }}>{error.username}</p>
+            )}
           </div>
 
           <div style={{ marginBottom: "1rem" }}>
             <label>Password</label>
-            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter your password" style={{ width: "100%", padding: "0.5rem", borderRadius: "4px" }} />
-            {error.password && <p style={{ color: "red", marginTop: "0.25rem" }}>{error.password}</p>}
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter your password"
+              style={{ width: "100%", padding: "0.5rem", borderRadius: "4px" }}
+            />
+            {error.password && (
+              <p style={{ color: "red", marginTop: "0.25rem" }}>{error.password}</p>
+            )}
           </div>
 
-          {error.login && <p style={{ color: "red", marginBottom: "0.5rem", textAlign: "center" }}>{error.login}</p>}
+          {error.login && (
+            <p style={{ color: "red", marginBottom: "0.5rem", textAlign: "center" }}>
+              {error.login}
+            </p>
+          )}
 
-          <button type="submit" style={{ marginTop: "1rem", width: "100%", padding: "0.75rem", borderRadius: "6px", backgroundColor: "#4f46e5", color: "white", fontWeight: "bold", cursor: "pointer", border: "none" }}>
+          <button
+            type="submit"
+            style={{ marginTop: "1rem", width: "100%", padding: "0.75rem", borderRadius: "6px", backgroundColor: "#4f46e5", color: "white", fontWeight: "bold", cursor: "pointer", border: "none" }}
+          >
             Login
           </button>
         </form>
 
         <p style={{ marginTop: "1rem", textAlign: "center" }}>
-          Don't have an account? <Link to="/signup" style={{ color: "#4f46e5", fontWeight: "bold" }}>Sign Up</Link>
+          Don't have a Privyra account?{" "}
+          <Link to="/signup" style={{ color: "#4f46e5", fontWeight: "bold" }}>
+            Sign Up
+          </Link>
         </p>
 
-        <p style={{ textAlign: "center", marginTop: "0.25rem", fontSize: "0.8rem", color: "#888" }}>Created by AxomAI</p>
+        <p style={{ textAlign: "center", marginTop: "0.25rem", fontSize: "0.8rem", color: "#888" }}>
+          Powered by Privyra
+        </p>
       </div>
     </div>
   );
