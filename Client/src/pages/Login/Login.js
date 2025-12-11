@@ -6,11 +6,12 @@ import { UserContext } from "../../context/UserContext";
 function Login() {
   const navigate = useNavigate();
   const { login } = useContext(UserContext);
+
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState({});
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const newErrors = {};
 
@@ -24,20 +25,26 @@ function Login() {
         "Password must be 8–12 characters with upper, lower, number & special character";
 
     setError(newErrors);
+    if (Object.keys(newErrors).length !== 0) return;
 
-    if (Object.keys(newErrors).length === 0) {
-      const users = JSON.parse(localStorage.getItem("users") || "[]");
-      const userExists = users.find(
-        (u) => u.username === username && u.password === password
-      );
+    try {
+      const res = await fetch("http://localhost:5000/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
 
-      if (!userExists) {
-        setError({ login: "Invalid username or password" });
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError({ login: data.message });
         return;
       }
 
-      login(username);
+      login(data.username);
       navigate("/");
+    } catch (err) {
+      setError({ login: "Server error. Try again later." });
     }
   };
 
@@ -67,9 +74,7 @@ function Login() {
               placeholder="Enter your username"
               style={{ width: "100%", padding: "0.5rem", borderRadius: "4px" }}
             />
-            {error.username && (
-              <p style={{ color: "red", marginTop: "0.25rem" }}>{error.username}</p>
-            )}
+            {error.username && <p style={{ color: "red" }}>{error.username}</p>}
           </div>
 
           <div style={{ marginBottom: "1rem" }}>
@@ -81,34 +86,26 @@ function Login() {
               placeholder="Enter your password"
               style={{ width: "100%", padding: "0.5rem", borderRadius: "4px" }}
             />
-            {error.password && (
-              <p style={{ color: "red", marginTop: "0.25rem" }}>{error.password}</p>
-            )}
+            {error.password && <p style={{ color: "red" }}>{error.password}</p>}
           </div>
 
           {error.login && (
-            <p style={{ color: "red", marginBottom: "0.5rem", textAlign: "center" }}>
-              {error.login}
-            </p>
+            <p style={{ color: "red", textAlign: "center" }}>{error.login}</p>
           )}
 
           <button
             type="submit"
-            style={{ marginTop: "1rem", width: "100%", padding: "0.75rem", borderRadius: "6px", backgroundColor: "#4f46e5", color: "white", fontWeight: "bold", cursor: "pointer", border: "none" }}
+            style={{ width: "100%", padding: "0.75rem", borderRadius: "6px", backgroundColor: "#4f46e5", color: "white", fontWeight: "bold", border: "none" }}
           >
             Login
           </button>
         </form>
 
         <p style={{ marginTop: "1rem", textAlign: "center" }}>
-          Don't have a Privyra account?{" "}
+          Don't have an account?{" "}
           <Link to="/signup" style={{ color: "#4f46e5", fontWeight: "bold" }}>
             Sign Up
           </Link>
-        </p>
-
-        <p style={{ textAlign: "center", marginTop: "0.25rem", fontSize: "0.8rem", color: "#888" }}>
-          Powered by Privyra
         </p>
       </div>
     </div>

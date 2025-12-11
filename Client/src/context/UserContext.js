@@ -1,4 +1,3 @@
-// src/context/UserContext.js
 import React, { createContext, useState, useEffect } from "react";
 
 export const UserContext = createContext();
@@ -6,20 +5,22 @@ export const UserContext = createContext();
 export const UserProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
 
-  // Load logged-in user from localStorage on app start
   useEffect(() => {
-    const storedUser = localStorage.getItem("currentUser");
-    if (storedUser) setCurrentUser(storedUser);
+    const storedUser = localStorage.getItem("privyraUser");
+    const token = localStorage.getItem("privyraToken");
+    if (storedUser && token) setCurrentUser({ username: storedUser, token });
   }, []);
 
-  const login = (username) => {
-    setCurrentUser(username); // update state
-    localStorage.setItem("currentUser", username); // persist
+  const login = (userData) => {
+    setCurrentUser(userData);
+    localStorage.setItem("privyraUser", userData.username);
+    localStorage.setItem("privyraToken", userData.token);
   };
 
   const logout = () => {
     setCurrentUser(null);
-    localStorage.removeItem("currentUser");
+    localStorage.removeItem("privyraUser");
+    localStorage.removeItem("privyraToken");
   };
 
   return (
