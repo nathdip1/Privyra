@@ -41,7 +41,7 @@ function Login() {
         return;
       }
 
-      login(data.username);
+      login({ username: data.username, token: data.token });
       navigate("/");
     } catch (err) {
       setError({ login: "Server error. Try again later." });

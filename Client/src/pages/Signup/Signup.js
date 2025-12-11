@@ -49,7 +49,7 @@ function Signup() {
         return;
       }
 
-      login(data.username);
+      login({ username: data.username, token: data.token });
       navigate("/login");
     } catch (err) {
       setErrors({ server: "Server error. Try again later." });
