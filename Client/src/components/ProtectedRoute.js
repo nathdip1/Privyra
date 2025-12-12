@@ -1,12 +1,19 @@
 import React, { useContext } from "react";
 import { Navigate } from "react-router-dom";
-import { UserContext } from "../context/UserContext";
+import { AuthContext } from "../context/AuthContext";
 
 const ProtectedRoute = ({ children }) => {
-  const { currentUser } = useContext(UserContext);
-  if (!currentUser?.token) {
+  const { user, loading } = useContext(AuthContext);
+
+  if (loading) {
+    // You can return a loader here if you want
+    return <div>Loading...</div>;
+  }
+
+  if (!user?.token) {
     return <Navigate to="/login" replace />;
   }
+
   return children;
 };
 

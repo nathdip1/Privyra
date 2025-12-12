@@ -1,11 +1,11 @@
 import React, { useState, useContext } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { validateUsername, validatePassword } from "../../utils/validators";
-import { UserContext } from "../../context/UserContext";
+import { AuthContext } from "../../context/AuthContext";
 
 function Signup() {
   const navigate = useNavigate();
-  const { login } = useContext(UserContext);
+  const { login } = useContext(AuthContext);
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");

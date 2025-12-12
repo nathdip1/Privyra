@@ -7,16 +7,19 @@ import Signup from "./pages/Signup/Signup";
 import Terms from "./pages/Terms/Terms";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Layout from "./components/Layout";
-import { UserProvider } from "./context/UserContext";
+
+// NEW import
+import { AuthProvider } from "./context/AuthContext";
 
 function App() {
   return (
-    <UserProvider>
+    <AuthProvider>
       <Router>
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/terms" element={<Terms />} />
+
           <Route
             path="/"
             element={
@@ -29,7 +32,7 @@ function App() {
           />
         </Routes>
       </Router>
-    </UserProvider>
+    </AuthProvider>
   );
 }
 
