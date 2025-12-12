@@ -1,7 +1,17 @@
-import React from "react";
-import { Link } from "react-router-dom";
+// Client/src/components/Layout.js
+import React, { useContext } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
 
 const Layout = ({ children }) => {
+  const { logout } = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login", { replace: true });
+  };
+
   return (
     <div style={{ minHeight: "100vh", position: "relative", backgroundColor: "#f9f9f9" }}>
       {/* Top Header */}
@@ -21,8 +31,24 @@ const Layout = ({ children }) => {
           zIndex: 1000,
         }}
       >
-        <img src={process.env.PUBLIC_URL + "/logo.png"} alt="Logo" style={{ height: "40px" }} />
-        <h1 style={{ fontSize: "1.2rem" }}>Privyra</h1>
+        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+          <img src={process.env.PUBLIC_URL + "/logo.png"} alt="Logo" style={{ height: "40px" }} />
+          <h1 style={{ fontSize: "1.2rem" }}>Privyra</h1>
+        </div>
+        <button
+          onClick={handleLogout}
+          style={{
+            padding: "6px 12px",
+            backgroundColor: "#4f46e5",
+            color: "#fff",
+            border: "none",
+            borderRadius: "6px",
+            cursor: "pointer",
+            fontWeight: "bold",
+          }}
+        >
+          Logout
+        </button>
       </header>
 
       {/* Main content */}
