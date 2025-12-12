@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import axios from "axios";
+import { AuthContext } from "../../context/AuthContext";
 
 function Home() {
   const [file, setFile] = useState(null);
@@ -9,21 +10,46 @@ function Home() {
   const [displayedImage, setDisplayedImage] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  const { currentUser } = useContext(AuthContext);
+  console.log("Current user from AuthContext:", currentUser);
+
   const handleFileChange = (e) => setFile(e.target.files[0]);
 
   const handleUpload = async () => {
     if (!file) return alert("Please select an image!");
+    if (!currentUser?.token) return alert("Please login first!");
+
     setLoading(true);
     try {
       const formData = new FormData();
       formData.append("image", file);
       formData.append("watermark", watermark);
 
-      const res = await axios.post("http://localhost:5000/api/upload", formData);
-      setSecureLink(res.data.secureLink);
+      const res = await axios.post(
+        "http://localhost:5000/api/upload",
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${currentUser.token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      if (res.data.secureLink) {
+        setSecureLink(res.data.secureLink);
+        alert("Upload successful!");
+      } else {
+        alert("Upload failed: No secure link returned");
+      }
     } catch (err) {
-      console.error(err);
-      alert("Upload failed!");
+      console.error("Upload error:", err.response || err.message || err);
+      const msg =
+        err.response?.data?.error ||
+        err.response?.data?.message ||
+        err.message ||
+        "Upload failed!";
+      alert(msg);
     }
     setLoading(false);
   };
@@ -32,12 +58,17 @@ function Home() {
     if (!linkInput) return alert("Please enter a secure link!");
     setLoading(true);
     try {
-      const res = await axios.get(`http://localhost:5000/api/view/${linkInput}`, { responseType: "blob" });
+      const res = await axios.get(linkInput, { responseType: "blob" });
       const url = URL.createObjectURL(res.data);
       setDisplayedImage(url);
     } catch (err) {
-      console.error(err);
-      alert("Cannot display image!");
+      console.error("Display error:", err.response || err.message || err);
+      const msg =
+        err.response?.data?.error ||
+        err.response?.data?.message ||
+        err.message ||
+        "Cannot display image!";
+      alert(msg);
     }
     setLoading(false);
   };
@@ -60,7 +91,12 @@ function Home() {
       {secureLink && (
         <div style={{ marginTop: "1rem" }}>
           <p>Secure Link (copy & share):</p>
-          <input type="text" value={secureLink} readOnly style={{ width: "100%", padding: "0.5rem" }} />
+          <input
+            type="text"
+            value={secureLink}
+            readOnly
+            style={{ width: "100%", padding: "0.5rem" }}
+          />
         </div>
       )}
 

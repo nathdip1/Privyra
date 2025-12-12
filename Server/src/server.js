@@ -3,18 +3,29 @@ import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
 import authRoutes from "./routes/auth.routes.js";
+import uploadRoutes from "./routes/upload.routes.js";
+import viewRoutes from "./routes/view.routes.js";
 
 dotenv.config();
+console.log("JWT SECRET LOADED:", process.env.JWT_SECRET);
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
-app.use(cors());
+// CORS middleware
+app.use(cors({
+  origin: "http://localhost:3000", // React app
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+}));
+
+// Body parser
 app.use(express.json());
 
 // Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/upload", uploadRoutes);
+app.use("/api/view", viewRoutes);
 
 // MongoDB connection
 mongoose
@@ -22,4 +33,5 @@ mongoose
   .then(() => console.log("MongoDB connected"))
   .catch((err) => console.log("MongoDB connection error:", err));
 
+// Start server
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

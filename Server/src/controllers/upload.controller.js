@@ -1,29 +1,39 @@
+import cloudinary from "cloudinary";
+import streamifier from "streamifier";
 import Image from "../models/Image.js";
-import cloudinary from "../config/cloudinary.js";
-import crypto from "crypto";
+
+cloudinary.v2.config({
+  cloud_name: process.env.CLOUD_NAME,
+  api_key: process.env.CLOUD_API_KEY,
+  api_secret: process.env.CLOUD_API_SECRET,
+});
 
 export const uploadImage = async (req, res) => {
   try {
-    const { file } = req;
-    const { watermark } = req.body;
+    if (!req.file) return res.status(400).json({ error: "No file uploaded" });
+    if (!req.user) return res.status(401).json({ error: "Unauthorized" });
 
-    const uploaded = await cloudinary.uploader.upload(file.path, {
-      transformation: [{ overlay: { text: watermark }, gravity: "south_east", opacity: 50 }],
+    const result = await new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.v2.uploader.upload_stream(
+        { folder: "privyra_secure" },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result);
+        }
+      );
+      streamifier.createReadStream(req.file.buffer).pipe(uploadStream);
     });
 
-    const secureLink = crypto.randomBytes(12).toString("hex");
-
-    const image = new Image({
-      url: uploaded.secure_url,
-      uploader: req.user.id,
-      watermark,
-      secureLink,
+    const imageDoc = await Image.create({
+      url: result.secure_url,
+      secureLink: result.secure_url,
+      uploadedBy: req.user._id,   // FIXED FIELD NAME
+      watermark: req.body.watermark || "",
     });
 
-    await image.save();
-    res.json({ secureLink });
+    res.json({ secureLink: imageDoc.secureLink });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Upload failed" });
+    console.error("UPLOAD ERROR:", err);
+    res.status(500).json({ error: err.message || "Upload failed" });
   }
 };

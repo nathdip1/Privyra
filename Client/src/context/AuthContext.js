@@ -1,22 +1,25 @@
+// Client/src/context/AuthContext.js
 import React, { createContext, useState, useEffect } from "react";
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
-  const [loading, setLoading] = useState(true); // new
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const storedUser = localStorage.getItem("privyraUser");
-    const token = localStorage.getItem("privyraToken");
-    if (storedUser && token) setCurrentUser({ username: storedUser, token });
-    setLoading(false); // done reading localStorage
+    const storedToken = localStorage.getItem("privyraToken");
+    if (storedUser && storedToken) {
+      setCurrentUser({ username: storedUser, token: storedToken });
+    }
+    setLoading(false);
   }, []);
 
-  const login = (userData) => {
-    setCurrentUser(userData);
-    localStorage.setItem("privyraUser", userData.username);
-    localStorage.setItem("privyraToken", userData.token);
+  const login = ({ username, token }) => {
+    setCurrentUser({ username, token });
+    localStorage.setItem("privyraUser", username);
+    localStorage.setItem("privyraToken", token);
   };
 
   const logout = () => {

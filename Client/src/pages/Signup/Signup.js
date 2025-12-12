@@ -4,6 +4,8 @@ import { useNavigate, Link } from "react-router-dom";
 import { validateUsername, validatePassword } from "../../utils/validators";
 import { AuthContext } from "../../context/AuthContext";
 
+
+
 function Signup() {
   const navigate = useNavigate();
   const { login } = useContext(AuthContext);
@@ -182,5 +184,6 @@ function Signup() {
     </div>
   );
 }
+
 
 export default Signup;

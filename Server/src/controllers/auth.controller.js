@@ -1,8 +1,12 @@
 import User from "../models/User.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+dotenv.config();
 
-const JWT_SECRET = process.env.JWT_SECRET || "privyra_secret";
+console.log("AUTH CONTROLLER SECRET:", process.env.JWT_SECRET);
+
+const JWT_SECRET = process.env.JWT_SECRET;
 
 // Signup controller
 export const signup = async (req, res) => {
@@ -27,6 +31,11 @@ export const signup = async (req, res) => {
     });
 
     await newUser.save();
+
+    // ADD THESE LINES ↓↓↓
+    console.log("SIGNUP USING SECRET:", JWT_SECRET);
+    console.log("SIGNUP SECRET TYPE:", typeof JWT_SECRET);
+    // ADD ABOVE LINES BEFORE jwt.sign()
 
     const token = jwt.sign(
       { id: newUser._id, username },
@@ -62,6 +71,11 @@ export const login = async (req, res) => {
     if (!isMatch) {
       return res.status(400).json({ message: "Invalid username or password" });
     }
+
+    // ADD THESE LINES ↓↓↓
+    console.log("LOGIN USING SECRET:", JWT_SECRET);
+    console.log("LOGIN SECRET TYPE:", typeof JWT_SECRET);
+    // ADD ABOVE LINES BEFORE jwt.sign()
 
     const token = jwt.sign(
       { id: user._id, username },
