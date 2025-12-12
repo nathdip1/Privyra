@@ -10,6 +10,7 @@ function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState({});
+  const [hovered, setHovered] = useState(false); // For logo hover
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -50,7 +51,24 @@ function Login() {
 
   return (
     <div style={{ height: "100vh", display: "flex", justifyContent: "center", alignItems: "center", flexDirection: "column", padding: "1rem", backgroundColor: "#eef2ff" }}>
+      
+      {/* Logo */}
       <div style={{ textAlign: "center", marginBottom: "1.5rem" }}>
+        <img 
+          src={process.env.PUBLIC_URL + "/logo.png"} 
+          alt="Privyra Logo" 
+          style={{
+            maxWidth: "200px",
+            width: "40%",
+            height: "auto",
+            marginBottom: "1rem",
+            transition: "transform 0.3s ease",
+            transform: hovered ? "scale(1.1)" : "scale(1)",
+            cursor: "pointer"
+          }}
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={() => setHovered(false)}
+        />
         <h3 style={{ fontSize: "1.25rem", marginBottom: "0.5rem" }}>
           Welcome back to Privyra
         </h3>

@@ -1,3 +1,4 @@
+// src/pages/Signup/Signup.js
 import React, { useState, useContext } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { validateUsername, validatePassword } from "../../utils/validators";
@@ -12,6 +13,7 @@ function Signup() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [errors, setErrors] = useState({});
+  const [hovered, setHovered] = useState(false); // Logo hover effect
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -57,10 +59,53 @@ function Signup() {
   };
 
   return (
-    <div style={{ height: "100vh", display: "flex", justifyContent: "center", alignItems: "center" }}>
-      <div style={{ width: "400px", padding: "2rem", border: "1px solid #ddd", borderRadius: "10px" }}>
-        <h2 style={{ textAlign: "center" }}>Create Account</h2>
+    <div
+      style={{
+        height: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        flexDirection: "column",
+        padding: "1rem",
+        backgroundColor: "#eef2ff",
+      }}
+    >
+      {/* Logo + Tagline */}
+      <div style={{ textAlign: "center", marginBottom: "1.5rem" }}>
+        <img
+          src={process.env.PUBLIC_URL + "/logo.png"}
+          alt="Privyra Logo"
+          style={{
+            maxWidth: "220px",
+            width: "45%",
+            height: "auto",
+            marginBottom: "1rem",
+            transition: "transform 0.3s ease",
+            transform: hovered ? "scale(1.1)" : "scale(1)",
+            cursor: "pointer",
+          }}
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={() => setHovered(false)}
+        />
+        <h2 style={{ fontSize: "1.25rem", marginBottom: "0.5rem" }}>
+          Create your Privyra Account
+        </h2>
+        <p style={{ fontSize: "0.95rem", color: "#555" }}>
+          Join Privyra to manage your secure access and explore our services!
+        </p>
+      </div>
 
+      {/* Signup Form */}
+      <div
+        style={{
+          width: "100%",
+          maxWidth: "400px",
+          padding: "2rem",
+          border: "1px solid #ddd",
+          borderRadius: "10px",
+          backgroundColor: "#f9f9f9",
+        }}
+      >
         <form onSubmit={handleSubmit}>
           <input
             type="text"
@@ -87,27 +132,51 @@ function Signup() {
             onChange={(e) => setConfirmPassword(e.target.value)}
             style={{ width: "100%", padding: "8px", marginBottom: "8px" }}
           />
-          {errors.confirmPassword && <p style={{ color: "red" }}>{errors.confirmPassword}</p>}
+          {errors.confirmPassword && (
+            <p style={{ color: "red" }}>{errors.confirmPassword}</p>
+          )}
 
-          <label>
+          {/* Terms Checkbox with Link */}
+          <label style={{ display: "block", margin: "10px 0" }}>
             <input
               type="checkbox"
               checked={termsAccepted}
               onChange={(e) => setTermsAccepted(e.target.checked)}
             />{" "}
-            Accept Terms
+            I accept the{" "}
+            <Link
+              to="/terms"
+              style={{ color: "#4f46e5", textDecoration: "underline" }}
+            >
+              Terms & Conditions
+            </Link>
           </label>
           {errors.terms && <p style={{ color: "red" }}>{errors.terms}</p>}
 
           {errors.server && <p style={{ color: "red" }}>{errors.server}</p>}
 
-          <button type="submit" style={{ width: "100%", marginTop: "10px" }}>
+          <button
+            type="submit"
+            style={{
+              width: "100%",
+              marginTop: "10px",
+              padding: "0.75rem",
+              borderRadius: "6px",
+              backgroundColor: "#4f46e5",
+              color: "white",
+              fontWeight: "bold",
+              border: "none",
+            }}
+          >
             Sign Up
           </button>
         </form>
 
         <p style={{ textAlign: "center", marginTop: "10px" }}>
-          Already have an account? <Link to="/login">Login</Link>
+          Already have an account?{" "}
+          <Link to="/login" style={{ color: "#4f46e5", fontWeight: "bold" }}>
+            Login
+          </Link>
         </p>
       </div>
     </div>

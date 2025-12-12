@@ -1,0 +1,29 @@
+body {
+  margin: 0;
+  font-family: 'Arial', sans-serif;
+  background-color: #eef2ff;
+  color: #111;
+}
+
+a {
+  color: #4f46e5;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+button {
+  cursor: pointer;
+  font-weight: bold;
+}
+
+input, select, textarea {
+  font-family: inherit;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  padding: 0.5rem;
+  width: 100%;
+  box-sizing: border-box;
+}
