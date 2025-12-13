@@ -1,10 +1,25 @@
-body {
-  margin: 0;
-  font-family: 'Arial', sans-serif;
-  background-color: #eef2ff;
-  color: #111;
+/* ===============================
+   GLOBAL RESET & BASE
+================================ */
+* {
+  box-sizing: border-box;
 }
 
+html {
+  font-size: 16px; /* prevents mobile zoom */
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background-color: #eef2ff;
+  color: #111;
+  line-height: 1.5;
+}
+
+/* ===============================
+   LINKS
+================================ */
 a {
   color: #4f46e5;
   text-decoration: none;
@@ -14,16 +29,96 @@ a:hover {
   text-decoration: underline;
 }
 
-button {
-  cursor: pointer;
-  font-weight: bold;
-}
-
-input, select, textarea {
-  font-family: inherit;
+/* ===============================
+   FORM ELEMENTS
+================================ */
+input,
+select,
+textarea {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px; /* mobile-safe */
   border-radius: 6px;
   border: 1px solid #ddd;
-  padding: 0.5rem;
+  outline: none;
+}
+
+input:focus {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 1px rgba(79, 70, 229, 0.3);
+}
+
+/* ===============================
+   BUTTONS
+================================ */
+button {
   width: 100%;
-  box-sizing: border-box;
+  padding: 14px;
+  font-size: 16px;
+  border-radius: 8px;
+  border: none;
+  background-color: #4f46e5;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.6;
+}
+
+/* ===============================
+   AUTH LAYOUT (LOGIN / SIGNUP)
+================================ */
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+}
+
+.auth-wrapper {
+  width: 100%;
+  max-width: 420px;
+}
+
+.auth-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.auth-header img {
+  max-width: 160px;
+  height: auto;
+  margin-bottom: 1rem;
+}
+
+.form-container {
+  background-color: #f9f9f9;
+  padding: 2rem;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-error {
+  color: red;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+}
+
+.form-footer {
+  text-align: center;
+  margin-top: 1rem;
+}
+
+
+@media (min-width: 768px) {
+  .form-container {
+    max-width: 360px;   /* 👈 portrait feel on PC */
+  }
 }
