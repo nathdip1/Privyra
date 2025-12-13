@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import axios from "axios";
 import { AuthContext } from "../../context/AuthContext";
 import "../../styles/home.css";
@@ -12,6 +12,26 @@ function Home() {
   const [loading, setLoading] = useState(false);
 
   const { currentUser } = useContext(AuthContext);
+
+  /* =========================================================
+     🔐 SECURITY: Blur page when tab / app switches
+  ========================================================= */
+  useEffect(() => {
+    const blur = () => {
+      document.body.style.filter = "blur(12px)";
+    };
+    const focus = () => {
+      document.body.style.filter = "none";
+    };
+
+    window.addEventListener("blur", blur);
+    window.addEventListener("focus", focus);
+
+    return () => {
+      window.removeEventListener("blur", blur);
+      window.removeEventListener("focus", focus);
+    };
+  }, []);
 
   const handleFileChange = (e) => {
     if (e.target.files[0]) setFile(e.target.files[0]);
@@ -62,7 +82,9 @@ function Home() {
     setLoading(false);
   };
 
-  /* ✅ NEW: COPY LINK */
+  /* =========================
+     Copy Secure Link
+  ========================= */
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(secureLink);
@@ -72,7 +94,9 @@ function Home() {
     }
   };
 
-  /* ✅ NEW: SHARE LINK */
+  /* =========================
+     Share Secure Link
+  ========================= */
   const handleShare = async () => {
     if (navigator.share) {
       try {
@@ -82,7 +106,7 @@ function Home() {
           url: secureLink,
         });
       } catch {
-        // user cancelled share → do nothing
+        // user cancelled share
       }
     } else {
       alert("Sharing not supported on this device");
@@ -125,48 +149,48 @@ function Home() {
             <p>Secure Link</p>
             <input value={secureLink} readOnly />
 
+            {/* ✅ Copy + Share buttons (unchanged styling) */}
             <div
-  style={{
-    display: "flex",
-    gap: "12px",          // ✅ space between buttons
-    marginTop: "12px",    // ✅ one line below input
-  }}
->
-  <button
-    onClick={handleCopy}
-    style={{
-      flex: 1,            // ✅ half width
-      padding: "0.6rem",
-      borderRadius: "10px",
-      background: "rgba(255,255,255,0.12)",
-      color: "#fff",
-      border: "1px solid rgba(255,255,255,0.25)",
-      fontWeight: "600",
-      cursor: "pointer",
-    }}
-  >
-    Copy Link
-  </button>
+              style={{
+                display: "flex",
+                gap: "12px",
+                marginTop: "12px",
+              }}
+            >
+              <button
+                onClick={handleCopy}
+                style={{
+                  flex: 1,
+                  padding: "0.6rem",
+                  borderRadius: "10px",
+                  background: "rgba(255,255,255,0.12)",
+                  color: "#fff",
+                  border: "1px solid rgba(255,255,255,0.25)",
+                  fontWeight: "600",
+                  cursor: "pointer",
+                }}
+              >
+                Copy Link
+              </button>
 
-  <button
-    onClick={handleShare}
-    style={{
-      flex: 1,            // ✅ half width
-      padding: "0.6rem",
-      borderRadius: "10px",
-      background:
-        "linear-gradient(135deg, #7f7cff, #22d3ee)",
-      color: "#fff",
-      border: "none",
-      fontWeight: "600",
-      cursor: "pointer",
-      boxShadow: "0 0 10px rgba(34,211,238,0.5)",
-    }}
-  >
-    Share Link
-  </button>
-</div>
-
+              <button
+                onClick={handleShare}
+                style={{
+                  flex: 1,
+                  padding: "0.6rem",
+                  borderRadius: "10px",
+                  background:
+                    "linear-gradient(135deg, #7f7cff, #22d3ee)",
+                  color: "#fff",
+                  border: "none",
+                  fontWeight: "600",
+                  cursor: "pointer",
+                  boxShadow: "0 0 10px rgba(34,211,238,0.5)",
+                }}
+              >
+                Share Link
+              </button>
+            </div>
           </div>
         )}
 
@@ -188,11 +212,20 @@ function Home() {
           {loading ? "Loading..." : "Display Image"}
         </button>
 
+        {/* =========================================================
+            🔐 SECURITY: Block right-click, drag, download
+        ========================================================= */}
         {displayedImage && (
           <img
             src={displayedImage}
             alt="Secure"
             className="preview-image"
+            draggable={false}
+            onContextMenu={(e) => e.preventDefault()}
+            style={{
+              userSelect: "none",
+              pointerEvents: "none",
+            }}
           />
         )}
       </div>
