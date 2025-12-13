@@ -1,0 +1,111 @@
+/* Page Background */
+.home-page {
+  min-height: 100vh;
+  background: radial-gradient(circle at top, #1b1f3b, #050714);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+}
+
+/* Card */
+.home-card {
+  width: 100%;
+  max-width: 420px;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(14px);
+  border-radius: 18px;
+  padding: 2rem;
+  box-shadow: 0 0 40px rgba(80, 70, 229, 0.35);
+  text-align: center;
+}
+
+/* Headings */
+.home-title {
+  color: #ffffff;
+  margin-bottom: 0.25rem;
+}
+
+.home-subtitle {
+  color: #aab0ff;
+  margin-bottom: 1.5rem;
+}
+
+/* Upload Box */
+.upload-box {
+  display: block;
+  padding: 1rem;
+  border: 2px dashed #6a6cff;
+  border-radius: 12px;
+  cursor: pointer;
+  color: #cfd3ff;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.upload-box:hover {
+  background: rgba(106, 108, 255, 0.15);
+  box-shadow: 0 0 12px rgba(106, 108, 255, 0.6);
+}
+
+/* File name */
+.file-name {
+  margin: 0.5rem 0 1rem;
+  color: #c7cbff;
+  font-size: 0.9rem;
+}
+
+/* Inputs */
+.home-input {
+  margin-bottom: 1rem;
+  background: rgba(0, 0, 0, 0.35);
+  color: white;
+  border: 1px solid #444;
+}
+
+.home-input::placeholder {
+  color: #aaa;
+}
+
+.home-input.neon {
+  border-color: #00eaff;
+  box-shadow: 0 0 10px rgba(0, 234, 255, 0.4);
+}
+
+/* Buttons */
+.primary-btn {
+  width: 100%;
+  background: linear-gradient(90deg, #7b6cff, #4cc9f0);
+  margin-bottom: 1rem;
+}
+
+.success-btn {
+  width: 100%;
+  background: linear-gradient(90deg, #22c55e, #16a34a);
+}
+
+/* Secure link */
+.secure-link-box p {
+  color: #aab0ff;
+  margin-bottom: 0.25rem;
+}
+
+.secure-link-box input {
+  background: rgba(0, 0, 0, 0.4);
+  color: #00eaff;
+}
+
+/* Divider */
+.divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.2);
+  margin: 1.5rem 0;
+}
+
+/* Image Preview */
+.preview-image {
+  margin-top: 1rem;
+  max-width: 100%;
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(0, 234, 255, 0.4);
+}

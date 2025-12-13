@@ -1,6 +1,7 @@
 import React, { useState, useContext } from "react";
 import axios from "axios";
 import { AuthContext } from "../../context/AuthContext";
+import "../../styles/home.css";
 
 function Home() {
   const [file, setFile] = useState(null);
@@ -11,9 +12,10 @@ function Home() {
   const [loading, setLoading] = useState(false);
 
   const { currentUser } = useContext(AuthContext);
-  console.log("Current user from AuthContext:", currentUser);
 
-  const handleFileChange = (e) => setFile(e.target.files[0]);
+  const handleFileChange = (e) => {
+    if (e.target.files[0]) setFile(e.target.files[0]);
+  };
 
   const handleUpload = async () => {
     if (!file) return alert("Please select an image!");
@@ -38,18 +40,11 @@ function Home() {
 
       if (res.data.secureLink) {
         setSecureLink(res.data.secureLink);
-        alert("Upload successful!");
       } else {
-        alert("Upload failed: No secure link returned");
+        alert("Upload failed!");
       }
     } catch (err) {
-      console.error("Upload error:", err.response || err.message || err);
-      const msg =
-        err.response?.data?.error ||
-        err.response?.data?.message ||
-        err.message ||
-        "Upload failed!";
-      alert(msg);
+      alert(err.response?.data?.error || "Upload failed!");
     }
     setLoading(false);
   };
@@ -61,64 +56,146 @@ function Home() {
       const res = await axios.get(linkInput, { responseType: "blob" });
       const url = URL.createObjectURL(res.data);
       setDisplayedImage(url);
-    } catch (err) {
-      console.error("Display error:", err.response || err.message || err);
-      const msg =
-        err.response?.data?.error ||
-        err.response?.data?.message ||
-        err.message ||
-        "Cannot display image!";
-      alert(msg);
+    } catch {
+      alert("Cannot display image!");
     }
     setLoading(false);
   };
 
+  /* ✅ NEW: COPY LINK */
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(secureLink);
+      alert("Secure link copied!");
+    } catch {
+      alert("Failed to copy link");
+    }
+  };
+
+  /* ✅ NEW: SHARE LINK */
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: "Privyra Secure Image",
+          text: "View this secure image",
+          url: secureLink,
+        });
+      } catch {
+        // user cancelled share → do nothing
+      }
+    } else {
+      alert("Sharing not supported on this device");
+    }
+  };
+
   return (
-    <div style={{ padding: "1rem" }}>
-      <h2>Upload a Secure Image</h2>
-      <input type="file" onChange={handleFileChange} />
-      <input
-        type="text"
-        placeholder="Add watermark text"
-        value={watermark}
-        onChange={(e) => setWatermark(e.target.value)}
-        style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }}
-      />
-      <button onClick={handleUpload} disabled={loading} style={{ padding: "0.5rem 1rem" }}>
-        {loading ? "Uploading..." : "Generate Secure Link"}
-      </button>
+    <div className="home-page">
+      <div className="home-card">
+        <h2 className="home-title">Secure Image Sharing</h2>
+        <p className="home-subtitle">Upload • Share • Auto-delete</p>
 
-      {secureLink && (
-        <div style={{ marginTop: "1rem" }}>
-          <p>Secure Link (copy & share):</p>
-          <input
-            type="text"
-            value={secureLink}
-            readOnly
-            style={{ width: "100%", padding: "0.5rem" }}
+        <label className="upload-box">
+          <input type="file" hidden onChange={handleFileChange} />
+          <span>📁 Upload Image</span>
+        </label>
+
+        <p className="file-name">
+          {file ? file.name : "No file selected"}
+        </p>
+
+        <input
+          type="text"
+          placeholder="Optional watermark text"
+          value={watermark}
+          onChange={(e) => setWatermark(e.target.value)}
+          className="home-input"
+        />
+
+        <button
+          onClick={handleUpload}
+          disabled={loading}
+          className="primary-btn"
+        >
+          {loading ? "Uploading..." : "Generate Secure Link"}
+        </button>
+
+        {secureLink && (
+          <div className="secure-link-box">
+            <p>Secure Link</p>
+            <input value={secureLink} readOnly />
+
+            <div
+  style={{
+    display: "flex",
+    gap: "12px",          // ✅ space between buttons
+    marginTop: "12px",    // ✅ one line below input
+  }}
+>
+  <button
+    onClick={handleCopy}
+    style={{
+      flex: 1,            // ✅ half width
+      padding: "0.6rem",
+      borderRadius: "10px",
+      background: "rgba(255,255,255,0.12)",
+      color: "#fff",
+      border: "1px solid rgba(255,255,255,0.25)",
+      fontWeight: "600",
+      cursor: "pointer",
+    }}
+  >
+    Copy Link
+  </button>
+
+  <button
+    onClick={handleShare}
+    style={{
+      flex: 1,            // ✅ half width
+      padding: "0.6rem",
+      borderRadius: "10px",
+      background:
+        "linear-gradient(135deg, #7f7cff, #22d3ee)",
+      color: "#fff",
+      border: "none",
+      fontWeight: "600",
+      cursor: "pointer",
+      boxShadow: "0 0 10px rgba(34,211,238,0.5)",
+    }}
+  >
+    Share Link
+  </button>
+</div>
+
+          </div>
+        )}
+
+        <div className="divider" />
+
+        <input
+          type="text"
+          placeholder="Paste secure link to view image"
+          value={linkInput}
+          onChange={(e) => setLinkInput(e.target.value)}
+          className="home-input neon"
+        />
+
+        <button
+          onClick={handleDisplay}
+          disabled={loading}
+          className="success-btn"
+        >
+          {loading ? "Loading..." : "Display Image"}
+        </button>
+
+        {displayedImage && (
+          <img
+            src={displayedImage}
+            alt="Secure"
+            className="preview-image"
           />
-        </div>
-      )}
-
-      <hr style={{ margin: "2rem 0" }} />
-
-      <h2>Display Image from Secure Link</h2>
-      <input
-        type="text"
-        placeholder="Paste secure link here"
-        value={linkInput}
-        onChange={(e) => setLinkInput(e.target.value)}
-        style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }}
-      />
-      <button onClick={handleDisplay} disabled={loading} style={{ padding: "0.5rem 1rem" }}>
-        {loading ? "Loading..." : "Display Image"}
-      </button>
-
-      {displayedImage && (
-        <div style={{ marginTop: "1rem" }}>
-          <img src={displayedImage} alt="Secure" style={{ maxWidth: "100%" }} />
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
