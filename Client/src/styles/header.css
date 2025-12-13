@@ -13,6 +13,8 @@
   z-index: 1000;
 }
 
+/* ---------- LEFT BRAND ---------- */
+
 .logo-text {
   font-size: 20px;
   font-weight: 600;
@@ -20,6 +22,33 @@
   letter-spacing: 1px;
   text-shadow: 0 0 10px rgba(0, 255, 255, 0.6);
 }
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.app-logo {
+  height: 36px;
+  width: auto;
+  filter: drop-shadow(0 0 6px rgba(0, 255, 255, 0.6));
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.brand-subtitle {
+  font-size: 12px;
+  color: #aab0ff;
+  margin-top: 2px;
+  white-space: nowrap;
+}
+
+/* ---------- RIGHT PROFILE ---------- */
 
 .header-right {
   position: relative;
@@ -77,14 +106,62 @@
 .logout-btn {
   color: #ff4d4d;
 }
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+
+/* ======================================================
+   ✅ NEW FEATURE: CENTER SCROLLING WARNING / SUGGESTION
+   ====================================================== */
+
+.header-center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 45%;
+  overflow: hidden;
+  white-space: nowrap;
+  pointer-events: none; /* does not block clicks */
 }
 
-.app-logo {
-  height: 36px;
-  width: auto;
-  filter: drop-shadow(0 0 6px rgba(0, 255, 255, 0.6));
+.header-center .ticker {
+  display: inline-block;
+}
+
+.header-center .ticker span {
+  display: inline-block;
+  padding-left: 100%;
+  animation: header-scroll-text 18s linear infinite;
+  color: #facc15; /* warning yellow */
+  font-size: 13px;
+  text-shadow: 0 0 8px rgba(250, 204, 21, 0.6);
+}
+
+/* Smooth left-to-right scroll */
+@keyframes header-scroll-text {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+/* Hide ticker on small screens */
+@media (max-width: 768px) {
+  .header-center {
+    display: none;
+  }
+}
+
+.brand-tagline {
+  font-size: 13.5px; /* slightly bigger than subtitle */
+  color: #c8faff;
+  margin-top: 4px;
+  text-shadow: 0 0 6px rgba(0, 255, 255, 0.35);
+  white-space: nowrap;
+}
+
+.profile-avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
 }

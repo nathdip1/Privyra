@@ -10,10 +10,8 @@ function Home() {
   const [file, setFile] = useState(null);
   const [watermark, setWatermark] = useState("");
 
-  // 🔐 Controls
   const [expiresInMinutes, setExpiresInMinutes] = useState("");
   const [maxViews, setMaxViews] = useState("");
-  const [oneTimeView] = useState(false); // kept for backend safety
 
   const [secureLink, setSecureLink] = useState("");
   const [linkInput, setLinkInput] = useState("");
@@ -37,16 +35,12 @@ function Home() {
 
   const onExpiryChange = (val) => {
     setExpiresInMinutes(val);
-    if (val) {
-      setMaxViews("");
-    }
+    if (val) setMaxViews("");
   };
 
   const onMaxViewsChange = (val) => {
     setMaxViews(val);
-    if (val) {
-      setExpiresInMinutes("");
-    }
+    if (val) setExpiresInMinutes("");
   };
 
   const handleUpload = async () => {
@@ -61,10 +55,7 @@ function Home() {
 
       if (expiresInMinutes)
         formData.append("expiresInMinutes", expiresInMinutes);
-      if (maxViews)
-        formData.append("maxViews", maxViews);
-
-      // oneTimeView intentionally not sent (UI removed)
+      if (maxViews) formData.append("maxViews", maxViews);
 
       const res = await axios.post(
         "http://localhost:5000/api/upload",
@@ -118,9 +109,6 @@ function Home() {
 
       <div className="home-page">
         <div className="home-card">
-          <h2 className="home-title">Secure Image Sharing</h2>
-          <p className="home-subtitle">Upload • Share • Auto-Delete</p>
-
           <label className="upload-box">
             <input type="file" hidden onChange={handleFileChange} />
             <span>📁 Upload Image</span>

@@ -17,44 +17,57 @@ function Header() {
     <header className="neon-header">
       {/* LEFT: Logo + Brand */}
       <div className="header-left">
-        <img
-          src="/logo.png"
-          alt="Privyra Logo"
-          className="app-logo"
-        />
-        <span className="logo-text">Privyra</span>
+        <img src="/logo.png" alt="Privyra Logo" className="app-logo" />
+
+        <div className="brand-text">
+          <span className="logo-text">Privyra</span>
+
+          {/* ✅ NEW TAGLINE */}
+          <span className="brand-tagline">
+            End-to-End Encryption isn’t a promise — it’s our technology.
+          </span>
+
+          <span className="brand-subtitle">
+            Secure Image Sharing • Upload • Share • Auto-Delete
+          </span>
+        </div>
+      </div>
+
+      {/* CENTER: Scrolling message */}
+      <div className="header-center">
+        <div className="ticker">
+          <span>
+            You can use Privyra to transfer sensitive files securely — please use
+            responsibly and do not misuse the platform.
+          </span>
+        </div>
       </div>
 
       {/* RIGHT: Profile */}
       {currentUser && (
         <div className="header-right">
           <div
-            className="profile-circle"
-            onClick={() => setOpen((prev) => !prev)}
-          >
-            {currentUser.email?.charAt(0).toUpperCase()}
-          </div>
+  className="profile-circle"
+  onClick={() => setOpen((prev) => !prev)}
+>
+  <img
+    src="/avatar.png"
+    alt="Profile Avatar"
+    className="profile-avatar"
+  />
+</div>
 
           {open && (
             <div className="profile-dropdown">
-              <button onClick={() => navigate("/profile")}>
-                Profile
-              </button>
-
-              <button onClick={() => navigate("/messages")}>
-                Messages
-              </button>
-
+              <button onClick={() => navigate("/profile")}>Profile</button>
+              <button onClick={() => navigate("/messages")}>Messages</button>
               <button onClick={() => navigate("/notifications")}>
                 Notifications
               </button>
 
               <div className="dropdown-divider" />
 
-              <button
-                className="logout-btn"
-                onClick={handleLogout}
-              >
+              <button className="logout-btn" onClick={handleLogout}>
                 Logout
               </button>
             </div>
