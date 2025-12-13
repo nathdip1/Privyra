@@ -1,3 +1,4 @@
+// src/pages/Login/Login.js
 import React, { useState, useContext } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { validateUsername, validatePassword } from "../../utils/validators";
@@ -11,6 +12,7 @@ function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState({});
+  const [hovered, setHovered] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -36,47 +38,69 @@ function Login() {
       });
 
       const data = await res.json();
-      if (!res.ok) return setError({ login: data.message });
+
+      if (!res.ok) {
+        setError({ login: data.message });
+        return;
+      }
 
       login({ username: data.username, token: data.token });
       navigate("/");
-    } catch {
+    } catch (err) {
       setError({ login: "Server error. Try again later." });
     }
   };
 
   return (
     <div className="auth-page">
-      <img src="/logo.png" alt="Privyra" className="auth-logo" />
-      <h2 className="auth-title">Welcome back to Privyra</h2>
-      <p className="auth-subtitle">Log in to securely access your account.</p>
+      {/* Header */}
+      <div className="auth-header">
+        <img
+          src={process.env.PUBLIC_URL + "/logo.png"}
+          alt="Privyra Logo"
+          className="auth-logo"
+          style={{
+            transform: hovered ? "scale(1.08)" : "scale(1)",
+          }}
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={() => setHovered(false)}
+        />
 
-      <div className="auth-card">
+        <h2>Welcome back to Privyra</h2>
+        <p>Log in to securely access your account.</p>
+      </div>
+
+      {/* ✅ SAME WIDTH AS SIGNUP */}
+      <div className="form-container neon-card">
         <form onSubmit={handleSubmit}>
           <input
+            type="text"
             placeholder="Username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
           />
-          {error.username && <p style={{ color: "red" }}>{error.username}</p>}
+          {error.username && <p className="error">{error.username}</p>}
 
           <input
             type="password"
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            style={{ marginTop: "10px" }}
           />
-          {error.password && <p style={{ color: "red" }}>{error.password}</p>}
+          {error.password && <p className="error">{error.password}</p>}
 
-          {error.login && <p style={{ color: "red" }}>{error.login}</p>}
+          {error.login && (
+            <p className="error" style={{ textAlign: "center" }}>
+              {error.login}
+            </p>
+          )}
 
-          <button type="submit" style={{ marginTop: "14px", width: "100%" }}>
+          <button type="submit" className="primary-btn">
             Login
           </button>
         </form>
 
-        <p style={{ marginTop: "12px", textAlign: "center" }}>
+        <p className="auth-switch">
           Don’t have an account? <Link to="/signup">Sign Up</Link>
         </p>
       </div>
