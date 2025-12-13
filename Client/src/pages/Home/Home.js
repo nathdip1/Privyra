@@ -2,31 +2,29 @@ import React, { useState, useContext, useEffect } from "react";
 import axios from "axios";
 import { AuthContext } from "../../context/AuthContext";
 import "../../styles/home.css";
+import Header from "../../components/Header";
 
 function Home() {
+  const { currentUser } = useContext(AuthContext);
+
   const [file, setFile] = useState(null);
   const [watermark, setWatermark] = useState("");
+
+  // 🔐 Controls
+  const [expiresInMinutes, setExpiresInMinutes] = useState("");
+  const [maxViews, setMaxViews] = useState("");
+  const [oneTimeView] = useState(false); // kept for backend safety
+
   const [secureLink, setSecureLink] = useState("");
   const [linkInput, setLinkInput] = useState("");
   const [displayedImage, setDisplayedImage] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const { currentUser } = useContext(AuthContext);
-
-  /* =========================================================
-     🔐 SECURITY: Blur page when tab / app switches
-  ========================================================= */
   useEffect(() => {
-    const blur = () => {
-      document.body.style.filter = "blur(12px)";
-    };
-    const focus = () => {
-      document.body.style.filter = "none";
-    };
-
+    const blur = () => (document.body.style.filter = "blur(12px)");
+    const focus = () => (document.body.style.filter = "none");
     window.addEventListener("blur", blur);
     window.addEventListener("focus", focus);
-
     return () => {
       window.removeEventListener("blur", blur);
       window.removeEventListener("focus", focus);
@@ -37,15 +35,36 @@ function Home() {
     if (e.target.files[0]) setFile(e.target.files[0]);
   };
 
+  const onExpiryChange = (val) => {
+    setExpiresInMinutes(val);
+    if (val) {
+      setMaxViews("");
+    }
+  };
+
+  const onMaxViewsChange = (val) => {
+    setMaxViews(val);
+    if (val) {
+      setExpiresInMinutes("");
+    }
+  };
+
   const handleUpload = async () => {
-    if (!file) return alert("Please select an image!");
-    if (!currentUser?.token) return alert("Please login first!");
+    if (!file) return alert("Please select an image");
+    if (!currentUser?.token) return alert("Login required");
 
     setLoading(true);
     try {
       const formData = new FormData();
       formData.append("image", file);
       formData.append("watermark", watermark);
+
+      if (expiresInMinutes)
+        formData.append("expiresInMinutes", expiresInMinutes);
+      if (maxViews)
+        formData.append("maxViews", maxViews);
+
+      // oneTimeView intentionally not sent (UI removed)
 
       const res = await axios.post(
         "http://localhost:5000/api/upload",
@@ -58,178 +77,134 @@ function Home() {
         }
       );
 
-      if (res.data.secureLink) {
-        setSecureLink(res.data.secureLink);
-      } else {
-        alert("Upload failed!");
-      }
+      setSecureLink(res.data.secureLink);
     } catch (err) {
-      alert(err.response?.data?.error || "Upload failed!");
+      alert(err.response?.data?.error || "Upload failed");
     }
     setLoading(false);
+  };
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(secureLink);
+    alert("Secure link copied");
+  };
+
+  const handleShare = async () => {
+    if (navigator.share) {
+      await navigator.share({
+        title: "Privyra Secure Image",
+        url: secureLink,
+      });
+    } else {
+      alert("Sharing not supported");
+    }
   };
 
   const handleDisplay = async () => {
-    if (!linkInput) return alert("Please enter a secure link!");
+    if (!linkInput) return alert("Enter secure link");
     setLoading(true);
     try {
       const res = await axios.get(linkInput, { responseType: "blob" });
-      const url = URL.createObjectURL(res.data);
-      setDisplayedImage(url);
+      setDisplayedImage(URL.createObjectURL(res.data));
     } catch {
-      alert("Cannot display image!");
+      alert("Cannot display image");
     }
     setLoading(false);
   };
 
-  /* =========================
-     Copy Secure Link
-  ========================= */
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(secureLink);
-      alert("Secure link copied!");
-    } catch {
-      alert("Failed to copy link");
-    }
-  };
-
-  /* =========================
-     Share Secure Link
-  ========================= */
-  const handleShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: "Privyra Secure Image",
-          text: "View this secure image",
-          url: secureLink,
-        });
-      } catch {
-        // user cancelled share
-      }
-    } else {
-      alert("Sharing not supported on this device");
-    }
-  };
-
   return (
-    <div className="home-page">
-      <div className="home-card">
-        <h2 className="home-title">Secure Image Sharing</h2>
-        <p className="home-subtitle">Upload • Share • Auto-delete</p>
+    <>
+      <Header />
 
-        <label className="upload-box">
-          <input type="file" hidden onChange={handleFileChange} />
-          <span>📁 Upload Image</span>
-        </label>
+      <div className="home-page">
+        <div className="home-card">
+          <h2 className="home-title">Secure Image Sharing</h2>
+          <p className="home-subtitle">Upload • Share • Auto-Delete</p>
 
-        <p className="file-name">
-          {file ? file.name : "No file selected"}
-        </p>
+          <label className="upload-box">
+            <input type="file" hidden onChange={handleFileChange} />
+            <span>📁 Upload Image</span>
+          </label>
 
-        <input
-          type="text"
-          placeholder="Optional watermark text"
-          value={watermark}
-          onChange={(e) => setWatermark(e.target.value)}
-          className="home-input"
-        />
+          <p className="file-name">
+            {file ? file.name : "No file selected"}
+          </p>
 
-        <button
-          onClick={handleUpload}
-          disabled={loading}
-          className="primary-btn"
-        >
-          {loading ? "Uploading..." : "Generate Secure Link"}
-        </button>
-
-        {secureLink && (
-          <div className="secure-link-box">
-            <p>Secure Link</p>
-            <input value={secureLink} readOnly />
-
-            {/* ✅ Copy + Share buttons (unchanged styling) */}
-            <div
-              style={{
-                display: "flex",
-                gap: "12px",
-                marginTop: "12px",
-              }}
-            >
-              <button
-                onClick={handleCopy}
-                style={{
-                  flex: 1,
-                  padding: "0.6rem",
-                  borderRadius: "10px",
-                  background: "rgba(255,255,255,0.12)",
-                  color: "#fff",
-                  border: "1px solid rgba(255,255,255,0.25)",
-                  fontWeight: "600",
-                  cursor: "pointer",
-                }}
-              >
-                Copy Link
-              </button>
-
-              <button
-                onClick={handleShare}
-                style={{
-                  flex: 1,
-                  padding: "0.6rem",
-                  borderRadius: "10px",
-                  background:
-                    "linear-gradient(135deg, #7f7cff, #22d3ee)",
-                  color: "#fff",
-                  border: "none",
-                  fontWeight: "600",
-                  cursor: "pointer",
-                  boxShadow: "0 0 10px rgba(34,211,238,0.5)",
-                }}
-              >
-                Share Link
-              </button>
-            </div>
-          </div>
-        )}
-
-        <div className="divider" />
-
-        <input
-          type="text"
-          placeholder="Paste secure link to view image"
-          value={linkInput}
-          onChange={(e) => setLinkInput(e.target.value)}
-          className="home-input neon"
-        />
-
-        <button
-          onClick={handleDisplay}
-          disabled={loading}
-          className="success-btn"
-        >
-          {loading ? "Loading..." : "Display Image"}
-        </button>
-
-        {/* =========================================================
-            🔐 SECURITY: Block right-click, drag, download
-        ========================================================= */}
-        {displayedImage && (
-          <img
-            src={displayedImage}
-            alt="Secure"
-            className="preview-image"
-            draggable={false}
-            onContextMenu={(e) => e.preventDefault()}
-            style={{
-              userSelect: "none",
-              pointerEvents: "none",
-            }}
+          <input
+            className="home-input"
+            placeholder="Optional watermark text"
+            value={watermark}
+            onChange={(e) => setWatermark(e.target.value)}
           />
-        )}
+
+          <input
+            className="home-input"
+            type="number"
+            placeholder="Expire after (minutes)"
+            value={expiresInMinutes}
+            onChange={(e) => onExpiryChange(e.target.value)}
+            disabled={!!maxViews}
+          />
+
+          <input
+            className="home-input"
+            type="number"
+            placeholder="Max allowed views"
+            value={maxViews}
+            onChange={(e) => onMaxViewsChange(e.target.value)}
+            disabled={!!expiresInMinutes}
+          />
+
+          <button
+            className="primary-btn"
+            onClick={handleUpload}
+            disabled={loading}
+          >
+            {loading ? "Uploading..." : "Generate Secure Link"}
+          </button>
+
+          {secureLink && (
+            <div className="secure-link-box">
+              <p>Secure Link</p>
+              <input value={secureLink} readOnly />
+
+              <div style={{ display: "flex", gap: "12px", marginTop: "12px" }}>
+                <button onClick={handleCopy} style={{ flex: 1 }}>
+                  Copy Link
+                </button>
+                <button onClick={handleShare} style={{ flex: 1 }}>
+                  Share Link
+                </button>
+              </div>
+            </div>
+          )}
+
+          <div className="divider" />
+
+          <input
+            className="home-input neon"
+            placeholder="Paste secure link to view image"
+            value={linkInput}
+            onChange={(e) => setLinkInput(e.target.value)}
+          />
+
+          <button className="success-btn" onClick={handleDisplay}>
+            Display Image
+          </button>
+
+          {displayedImage && (
+            <img
+              src={displayedImage}
+              alt="Secure"
+              className="preview-image"
+              draggable={false}
+              onContextMenu={(e) => e.preventDefault()}
+              style={{ pointerEvents: "none", userSelect: "none" }}
+            />
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 

@@ -26,8 +26,26 @@ export const uploadImage = async (req, res) => {
       : "Privyra";
 
     /* -----------------------------------
-       2️⃣ FORENSIC IDENTIFIER (SERVER SIDE)
-       (Not visible, stored in DB)
+       2️⃣ EXPIRY / VIEW SETTINGS (FROM UI)
+    ----------------------------------- */
+    const {
+      expiresInMinutes,   // number | undefined
+      maxViews,           // number | undefined
+      oneTimeView         // boolean | undefined
+    } = req.body;
+
+    const expiresAt = expiresInMinutes
+      ? new Date(Date.now() + Number(expiresInMinutes) * 60 * 1000)
+      : null;
+
+    const allowedViews = oneTimeView
+      ? 1
+      : maxViews
+      ? Number(maxViews)
+      : null;
+
+    /* -----------------------------------
+       3️⃣ FORENSIC IDENTIFIER (SERVER SIDE)
     ----------------------------------- */
     const forensicId = crypto
       .createHash("sha256")
@@ -35,14 +53,13 @@ export const uploadImage = async (req, res) => {
       .digest("hex");
 
     /* -----------------------------------
-       3️⃣ CLOUDINARY UPLOAD WITH
+       4️⃣ CLOUDINARY UPLOAD
            DIAGONAL + TILED WATERMARK
     ----------------------------------- */
-    const result = await cloudinary.v2.uploader.upload_stream(
+    const uploadStream = cloudinary.v2.uploader.upload_stream(
       {
         folder: "privyra_secure",
 
-        /* 🔥 Visible diagonal repeated watermark */
         transformation: [
           {
             overlay: {
@@ -57,11 +74,10 @@ export const uploadImage = async (req, res) => {
             flags: "layer_apply",
           },
           {
-            flags: "tiled", // 🔁 repeat watermark across image
+            flags: "tiled",
           },
         ],
 
-        /* 🔐 Metadata watermark (basic forensic) */
         context: {
           forensic_id: forensicId,
           owner: req.user.username || req.user._id.toString(),
@@ -76,7 +92,7 @@ export const uploadImage = async (req, res) => {
         }
 
         /* -----------------------------------
-           4️⃣ SAVE TO DATABASE
+           5️⃣ SAVE TO DATABASE
         ----------------------------------- */
         const image = await Image.create({
           url: uploadResult.secure_url,
@@ -84,14 +100,19 @@ export const uploadImage = async (req, res) => {
           uploadedBy: req.user._id,
           watermark: watermarkText,
           forensicId,
+
+          expiresAt,
+          maxViews: allowedViews,
+          views: 0,
+
+          auditLog: [], // will be filled on view
         });
 
         res.json({ secureLink: image.secureLink });
       }
     );
 
-    /* Pipe buffer to Cloudinary */
-    result.end(req.file.buffer);
+    uploadStream.end(req.file.buffer);
   } catch (err) {
     console.error("UPLOAD ERROR:", err);
     res.status(500).json({ error: "Upload failed" });
