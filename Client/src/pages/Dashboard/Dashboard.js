@@ -32,118 +32,137 @@ function Dashboard() {
   }, [currentUser]);
 
   const revoke = async (id) => {
-    try {
-      await axios.post(
-        `http://localhost:5000/api/dashboard/revoke/${id}`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${currentUser.token}`,
-          },
-        }
-      );
+    await axios.post(
+      `http://localhost:5000/api/dashboard/revoke/${id}`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${currentUser.token}`,
+        },
+      }
+    );
 
-      // mark as revoked locally
-      setUploads((prev) =>
-        prev.map((u) =>
-          u._id === id ? { ...u, revoked: true } : u
-        )
-      );
-    } catch (err) {
-      alert("Failed to revoke link");
-    }
+    setUploads((prev) =>
+      prev.map((u) =>
+        u._id === id ? { ...u, revoked: true } : u
+      )
+    );
+  };
+
+  const copyLink = (link) => {
+    navigator.clipboard.writeText(link);
+    alert("Secure link copied");
   };
 
   const now = new Date();
 
   const getStatus = (u) => {
-    if (u.revoked) return "Revoked";
+    if (u.revoked) return "revoked";
     if (u.expiresAt && new Date(u.expiresAt) < now)
-      return "Expired";
-    return "Active";
+      return "expired";
+    return "active";
   };
 
+  /* 🔹 ANALYTICS */
+  const totalUploads = uploads.length;
+  const totalViews = uploads.reduce(
+    (sum, u) => sum + u.views,
+    0
+  );
+  const activeLinks = uploads.filter(
+    (u) => getStatus(u) === "active"
+  ).length;
+
   if (loading) {
-    return <p style={{ padding: "2rem" }}>Loading dashboard...</p>;
+    return <p className="loading">Loading dashboard...</p>;
   }
 
   return (
     <div className="dashboard">
       <h2 className="dashboard-title">Dashboard</h2>
 
+      {/* 🔹 ANALYTICS CARDS */}
+      <div className="analytics">
+        <div className="card">
+          <span>Total Uploads</span>
+          <strong>{totalUploads}</strong>
+        </div>
+        <div className="card">
+          <span>Total Views</span>
+          <strong>{totalViews}</strong>
+        </div>
+        <div className="card">
+          <span>Active Links</span>
+          <strong>{activeLinks}</strong>
+        </div>
+      </div>
+
       {uploads.length === 0 && (
         <p className="empty-text">No uploads yet</p>
       )}
 
-      <div className="table">
-        {uploads.map((u) => (
-          <div key={u._id} className="table-row">
-            {/* FILE / LINK */}
-            <div className="cell">
-              <strong>Secure Link</strong>
-              <input
-                value={u.secureLink}
-                readOnly
-                onClick={(e) => e.target.select()}
-                style={{ width: "100%", marginTop: "6px" }}
-              />
-            </div>
+      {uploads.map((u) => (
+        <div key={u._id} className="upload-card">
+          {/* HEADER */}
+          <div className="upload-header">
+            <span className={`badge ${getStatus(u)}`}>
+              {getStatus(u).toUpperCase()}
+            </span>
 
-            {/* STATUS */}
-            <div
-              className={`cell status ${getStatus(u).toLowerCase()}`}
-            >
-              {getStatus(u)}
-            </div>
-
-            {/* VIEWS */}
-            <div className="cell">
-              {u.views}
-              {u.maxViews ? ` / ${u.maxViews}` : ""} views
-            </div>
-
-            {/* ACTIONS */}
-            <div className="cell actions">
-              {!u.revoked && (
-                <button
-                  className="danger"
-                  onClick={() => revoke(u._id)}
-                >
-                  Revoke
-                </button>
-              )}
-            </div>
-
-            {/* AUDIT LOG */}
-            <div className="cell" style={{ gridColumn: "1 / -1" }}>
-              <strong>Viewed by:</strong>
-
-              {u.viewLogs && u.viewLogs.length > 0 ? (
-                <ul style={{ marginTop: "6px", paddingLeft: "18px" }}>
-                  {u.viewLogs.map((v, idx) => (
-                    <li key={idx}>
-                      <span style={{ color: "#00ffff" }}>
-                        {v.viewerUsername}
-                      </span>{" "}
-                      → {v.viewCount} time
-                      {v.viewCount > 1 ? "s" : ""}
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p
-                  style={{
-                    marginTop: "6px",
-                    color: "#aab0ff",
-                  }}
-                >
-                  No views yet
-                </p>
-              )}
-            </div>
+            {!u.revoked && (
+              <button
+                className="revoke-btn"
+                onClick={() => revoke(u._id)}
+              >
+                Revoke
+              </button>
+            )}
           </div>
-        ))}
-      </div>
+
+          {/* LINK */}
+          <div className="link-row">
+            <input value={u.secureLink} readOnly />
+            <button
+              className="copy-btn"
+              onClick={() => copyLink(u.secureLink)}
+            >
+              Copy
+            </button>
+          </div>
+
+          {/* STATS */}
+          <p className="meta">
+            Views: {u.views}
+            {u.maxViews ? ` / ${u.maxViews}` : ""}
+          </p>
+
+          {/* VIEW HISTORY */}
+          <div className="views-log">
+            <strong>View history</strong>
+
+            {u.viewLogs.length === 0 ? (
+              <p className="muted">No views yet</p>
+            ) : (
+              <ul>
+                {u.viewLogs.map((v, i) => (
+                  <li key={i}>
+                    <span className="viewer">
+                      {v.viewerUsername}
+                    </span>{" "}
+                    → {v.viewCount} time
+                    {v.viewCount > 1 ? "s" : ""}
+                    <span className="time">
+                      {new Date(
+                        v.lastViewedAt
+                      ).toLocaleString()}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

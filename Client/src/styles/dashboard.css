@@ -1,6 +1,6 @@
 .dashboard {
   padding: 2rem;
-  max-width: 1100px;
+  max-width: 1000px;
   margin: auto;
   color: #e0ffff;
 }
@@ -9,84 +9,117 @@
   margin-bottom: 1.5rem;
 }
 
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+/* ANALYTICS */
+.analytics {
+  display: flex;
   gap: 1rem;
   margin-bottom: 2rem;
 }
 
-.stat-card {
+.analytics .card {
+  flex: 1;
   background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(0, 255, 255, 0.25);
+  border-radius: 12px;
+  padding: 1rem;
+  text-align: center;
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+}
+
+/* UPLOAD CARD */
+.upload-card {
+  background: rgba(255, 255, 255, 0.08);
   border-radius: 14px;
   padding: 1.2rem;
-  text-align: center;
-  box-shadow: 0 0 18px rgba(0, 255, 255, 0.25);
+  margin-bottom: 1.5rem;
 }
 
-.stat-card p {
-  font-size: 13px;
-  color: #aab0ff;
-}
-
-.section-title {
-  margin: 2rem 0 1rem;
-}
-
-.table {
-  background: rgba(255, 255, 255, 0.06);
-  border-radius: 14px;
-  overflow: hidden;
-}
-
-.table-row {
-  display: grid;
-  grid-template-columns: 2fr 1.2fr 1.5fr 2fr;
-  padding: 0.8rem 1rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+/* HEADER */
+.upload-header {
+  display: flex;
+  justify-content: space-between;
   align-items: center;
 }
 
-.table-row:last-child {
-  border-bottom: none;
+/* STATUS BADGES */
+.badge {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
 }
 
-.cell {
-  font-size: 14px;
+.badge.active {
+  background: #16a34a;
 }
 
-.actions {
+.badge.expired {
+  background: #f59e0b;
+}
+
+.badge.revoked {
+  background: #dc2626;
+}
+
+/* LINK */
+.link-row {
   display: flex;
   gap: 8px;
+  margin-top: 10px;
 }
 
-.actions button {
+.link-row input {
+  flex: 1;
+}
+
+.copy-btn {
+  background: linear-gradient(90deg, #00ffff, #7f00ff);
+  border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* REVOKE */
+.revoke-btn {
+  background: #dc2626;
+  border: none;
   padding: 6px 10px;
   border-radius: 8px;
-  border: none;
   cursor: pointer;
-  background: rgba(0, 255, 255, 0.2);
-  color: #e0ffff;
+  color: white;
 }
 
-.actions .danger {
-  background: rgba(255, 80, 80, 0.3);
-}
-
-.status.active {
-  color: #22c55e;
-}
-
-.status.revoked {
-  color: #ff4d4d;
-}
-
-.status.expired {
-  color: #facc15;
-}
-
-.empty-text {
-  color: #aab0ff;
+/* META */
+.meta {
+  margin-top: 8px;
   font-size: 14px;
+}
+
+/* VIEW LOG */
+.views-log {
+  margin-top: 12px;
+}
+
+.views-log ul {
+  padding-left: 18px;
+}
+
+.viewer {
+  color: #00ffff;
+}
+
+.time {
+  margin-left: 8px;
+  font-size: 12px;
+  color: #aab0ff;
+}
+
+.muted {
+  color: #aab0ff;
+}
+
+.loading,
+.empty-text {
+  text-align: center;
+  margin-top: 2rem;
 }
