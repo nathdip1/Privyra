@@ -1,7 +1,9 @@
+// src/pages/Login/Login.js
 import React, { useState, useContext } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { validateUsername, validatePassword } from "../../utils/validators";
 import { AuthContext } from "../../context/AuthContext";
+import "../../styles/auth.css";
 
 function Login() {
   const navigate = useNavigate();
@@ -10,7 +12,7 @@ function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState({});
-  const [hovered, setHovered] = useState(false); // For logo hover
+  const [hovered, setHovered] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -50,80 +52,56 @@ function Login() {
   };
 
   return (
-    <div style={{ height: "100vh", display: "flex", justifyContent: "center", alignItems: "center", flexDirection: "column", padding: "1rem", backgroundColor: "#eef2ff" }}>
-      
-      {/* Logo */}
-      <div style={{ textAlign: "center", marginBottom: "1.5rem" }}>
-        <img 
-          src={process.env.PUBLIC_URL + "/logo.png"} 
-          alt="Privyra Logo" 
+    <div className="auth-page">
+      {/* Header */}
+      <div className="auth-header">
+        <img
+          src={process.env.PUBLIC_URL + "/logo.png"}
+          alt="Privyra Logo"
+          className="auth-logo"
           style={{
-            maxWidth: "200px",
-            width: "40%",
-            height: "auto",
-            marginBottom: "1rem",
-            transition: "transform 0.3s ease",
-            transform: hovered ? "scale(1.1)" : "scale(1)",
-            cursor: "pointer"
+            transform: hovered ? "scale(1.08)" : "scale(1)",
           }}
           onMouseEnter={() => setHovered(true)}
           onMouseLeave={() => setHovered(false)}
         />
-        <h3 style={{ fontSize: "1.25rem", marginBottom: "0.5rem" }}>
-          Welcome back to Privyra
-        </h3>
-        <p style={{ fontSize: "0.95rem", color: "#555" }}>
-          Log in to securely access your Privyra account.
-        </p>
+
+        <h2>Welcome back to Privyra</h2>
+        <p>Log in to securely access your account.</p>
       </div>
 
-      <div className="login-container" style={{ width: "100%", maxWidth: "400px", padding: "2rem", border: "1px solid #ddd", borderRadius: "8px", backgroundColor: "#f9f9f9" }}>
-        <h2 style={{ textAlign: "center", marginBottom: "1rem" }}>
-          Login to Your Privyra Account
-        </h2>
-
+      {/* ✅ SAME WIDTH AS SIGNUP */}
+      <div className="form-container neon-card">
         <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: "1rem" }}>
-            <label>Username</label>
-            <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="Enter your username"
-              style={{ width: "100%", padding: "0.5rem", borderRadius: "4px" }}
-            />
-            {error.username && <p style={{ color: "red" }}>{error.username}</p>}
-          </div>
+          <input
+            type="text"
+            placeholder="Username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+          />
+          {error.username && <p className="error">{error.username}</p>}
 
-          <div style={{ marginBottom: "1rem" }}>
-            <label>Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
-              style={{ width: "100%", padding: "0.5rem", borderRadius: "4px" }}
-            />
-            {error.password && <p style={{ color: "red" }}>{error.password}</p>}
-          </div>
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          {error.password && <p className="error">{error.password}</p>}
 
           {error.login && (
-            <p style={{ color: "red", textAlign: "center" }}>{error.login}</p>
+            <p className="error" style={{ textAlign: "center" }}>
+              {error.login}
+            </p>
           )}
 
-          <button
-            type="submit"
-            style={{ width: "100%", padding: "0.75rem", borderRadius: "6px", backgroundColor: "#4f46e5", color: "white", fontWeight: "bold", border: "none" }}
-          >
+          <button type="submit" className="primary-btn">
             Login
           </button>
         </form>
 
-        <p style={{ marginTop: "1rem", textAlign: "center" }}>
-          Don't have an account?{" "}
-          <Link to="/signup" style={{ color: "#4f46e5", fontWeight: "bold" }}>
-            Sign Up
-          </Link>
+        <p className="auth-switch">
+          Don’t have an account? <Link to="/signup">Sign Up</Link>
         </p>
       </div>
     </div>

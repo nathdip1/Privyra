@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import authRoutes from "./routes/auth.routes.js";
 import uploadRoutes from "./routes/upload.routes.js";
 import viewRoutes from "./routes/view.routes.js";
+import imageRoutes from "./routes/image.routes.js";
 
 dotenv.config();
 console.log("JWT SECRET LOADED:", process.env.JWT_SECRET);
@@ -26,6 +27,8 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api/view", viewRoutes);
+app.use("/api/images", imageRoutes);
+
 
 // MongoDB connection
 mongoose

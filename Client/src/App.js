@@ -5,10 +5,8 @@ import Home from "./pages/Home/Home";
 import Login from "./pages/Login/Login";
 import Signup from "./pages/Signup/Signup";
 import Terms from "./pages/Terms/Terms";
+import Dashboard from "./pages/Dashboard/Dashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
-import Layout from "./components/Layout";
-
-// NEW import
 import { AuthProvider } from "./context/AuthContext";
 
 function App() {
@@ -16,17 +14,26 @@ function App() {
     <AuthProvider>
       <Router>
         <Routes>
+          {/* Public routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/terms" element={<Terms />} />
 
+          {/* Protected routes */}
           <Route
             path="/"
             element={
               <ProtectedRoute>
-                <Layout>
-                  <Home />
-                </Layout>
+                <Home />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
               </ProtectedRoute>
             }
           />

@@ -3,8 +3,7 @@ import React, { useState, useContext } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { validateUsername, validatePassword } from "../../utils/validators";
 import { AuthContext } from "../../context/AuthContext";
-
-
+import "../../styles/auth.css";
 
 function Signup() {
   const navigate = useNavigate();
@@ -15,7 +14,7 @@ function Signup() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [errors, setErrors] = useState({});
-  const [hovered, setHovered] = useState(false); // Logo hover effect
+  const [hovered, setHovered] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -61,129 +60,79 @@ function Signup() {
   };
 
   return (
-    <div
-      style={{
-        height: "100vh",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        flexDirection: "column",
-        padding: "1rem",
-        backgroundColor: "#eef2ff",
-      }}
-    >
-      {/* Logo + Tagline */}
-      <div style={{ textAlign: "center", marginBottom: "1.5rem" }}>
+    <div className="auth-page">
+      {/* Logo */}
+      <div className="auth-header">
         <img
           src={process.env.PUBLIC_URL + "/logo.png"}
           alt="Privyra Logo"
+          className="auth-logo"
           style={{
-            maxWidth: "220px",
-            width: "45%",
-            height: "auto",
-            marginBottom: "1rem",
-            transition: "transform 0.3s ease",
-            transform: hovered ? "scale(1.1)" : "scale(1)",
-            cursor: "pointer",
+            transform: hovered ? "scale(1.08)" : "scale(1)",
           }}
           onMouseEnter={() => setHovered(true)}
           onMouseLeave={() => setHovered(false)}
         />
-        <h2 style={{ fontSize: "1.25rem", marginBottom: "0.5rem" }}>
-          Create your Privyra Account
-        </h2>
-        <p style={{ fontSize: "0.95rem", color: "#555" }}>
-          Join Privyra to manage your secure access and explore our services!
-        </p>
+
+        <h2>Create your Privyra Account</h2>
+        <p>Join Privyra to manage secure access.</p>
       </div>
 
       {/* Signup Form */}
-      <div
-        style={{
-          width: "100%",
-          maxWidth: "400px",
-          padding: "2rem",
-          border: "1px solid #ddd",
-          borderRadius: "10px",
-          backgroundColor: "#f9f9f9",
-        }}
-      >
+      <div className="form-container neon-card">
         <form onSubmit={handleSubmit}>
           <input
             type="text"
             placeholder="Username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            style={{ width: "100%", padding: "8px", marginBottom: "8px" }}
           />
-          {errors.username && <p style={{ color: "red" }}>{errors.username}</p>}
+          {errors.username && <p className="error">{errors.username}</p>}
 
           <input
             type="password"
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            style={{ width: "100%", padding: "8px", marginBottom: "8px" }}
           />
-          {errors.password && <p style={{ color: "red" }}>{errors.password}</p>}
+          {errors.password && <p className="error">{errors.password}</p>}
 
           <input
             type="password"
             placeholder="Confirm Password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            style={{ width: "100%", padding: "8px", marginBottom: "8px" }}
           />
           {errors.confirmPassword && (
-            <p style={{ color: "red" }}>{errors.confirmPassword}</p>
+            <p className="error">{errors.confirmPassword}</p>
           )}
 
-          {/* Terms Checkbox with Link */}
-          <label style={{ display: "block", margin: "10px 0" }}>
-            <input
-              type="checkbox"
-              checked={termsAccepted}
-              onChange={(e) => setTermsAccepted(e.target.checked)}
-            />{" "}
-            I accept the{" "}
-            <Link
-              to="/terms"
-              style={{ color: "#4f46e5", textDecoration: "underline" }}
-            >
-              Terms & Conditions
-            </Link>
-          </label>
-          {errors.terms && <p style={{ color: "red" }}>{errors.terms}</p>}
+          {/* ✅ FIXED TERMS ALIGNMENT */}
+          <div className="terms-row">
+            <label className="terms-label">
+              <input
+                type="checkbox"
+                checked={termsAccepted}
+                onChange={(e) => setTermsAccepted(e.target.checked)}
+              />
+              <span>
+                I accept the <Link to="/terms">Terms & Conditions</Link>
+              </span>
+            </label>
+          </div>
+          {errors.terms && <p className="error">{errors.terms}</p>}
 
-          {errors.server && <p style={{ color: "red" }}>{errors.server}</p>}
-
-          <button
-            type="submit"
-            style={{
-              width: "100%",
-              marginTop: "10px",
-              padding: "0.75rem",
-              borderRadius: "6px",
-              backgroundColor: "#4f46e5",
-              color: "white",
-              fontWeight: "bold",
-              border: "none",
-            }}
-          >
+          <button type="submit" className="primary-btn">
             Sign Up
           </button>
         </form>
 
-        <p style={{ textAlign: "center", marginTop: "10px" }}>
-          Already have an account?{" "}
-          <Link to="/login" style={{ color: "#4f46e5", fontWeight: "bold" }}>
-            Login
-          </Link>
+        <p className="auth-switch">
+          Already have an account? <Link to="/login">Login</Link>
         </p>
       </div>
     </div>
   );
 }
-
 
 export default Signup;

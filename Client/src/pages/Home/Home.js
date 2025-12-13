@@ -1,29 +1,70 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import axios from "axios";
 import { AuthContext } from "../../context/AuthContext";
+import "../../styles/home.css";
+import Header from "../../components/Header";
 
 function Home() {
+  const { currentUser } = useContext(AuthContext);
+
   const [file, setFile] = useState(null);
   const [watermark, setWatermark] = useState("");
+
+  // 🔐 Controls
+  const [expiresInMinutes, setExpiresInMinutes] = useState("");
+  const [maxViews, setMaxViews] = useState("");
+  const [oneTimeView] = useState(false); // kept for backend safety
+
   const [secureLink, setSecureLink] = useState("");
   const [linkInput, setLinkInput] = useState("");
   const [displayedImage, setDisplayedImage] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const { currentUser } = useContext(AuthContext);
-  console.log("Current user from AuthContext:", currentUser);
+  useEffect(() => {
+    const blur = () => (document.body.style.filter = "blur(12px)");
+    const focus = () => (document.body.style.filter = "none");
+    window.addEventListener("blur", blur);
+    window.addEventListener("focus", focus);
+    return () => {
+      window.removeEventListener("blur", blur);
+      window.removeEventListener("focus", focus);
+    };
+  }, []);
 
-  const handleFileChange = (e) => setFile(e.target.files[0]);
+  const handleFileChange = (e) => {
+    if (e.target.files[0]) setFile(e.target.files[0]);
+  };
+
+  const onExpiryChange = (val) => {
+    setExpiresInMinutes(val);
+    if (val) {
+      setMaxViews("");
+    }
+  };
+
+  const onMaxViewsChange = (val) => {
+    setMaxViews(val);
+    if (val) {
+      setExpiresInMinutes("");
+    }
+  };
 
   const handleUpload = async () => {
-    if (!file) return alert("Please select an image!");
-    if (!currentUser?.token) return alert("Please login first!");
+    if (!file) return alert("Please select an image");
+    if (!currentUser?.token) return alert("Login required");
 
     setLoading(true);
     try {
       const formData = new FormData();
       formData.append("image", file);
       formData.append("watermark", watermark);
+
+      if (expiresInMinutes)
+        formData.append("expiresInMinutes", expiresInMinutes);
+      if (maxViews)
+        formData.append("maxViews", maxViews);
+
+      // oneTimeView intentionally not sent (UI removed)
 
       const res = await axios.post(
         "http://localhost:5000/api/upload",
@@ -36,90 +77,134 @@ function Home() {
         }
       );
 
-      if (res.data.secureLink) {
-        setSecureLink(res.data.secureLink);
-        alert("Upload successful!");
-      } else {
-        alert("Upload failed: No secure link returned");
-      }
+      setSecureLink(res.data.secureLink);
     } catch (err) {
-      console.error("Upload error:", err.response || err.message || err);
-      const msg =
-        err.response?.data?.error ||
-        err.response?.data?.message ||
-        err.message ||
-        "Upload failed!";
-      alert(msg);
+      alert(err.response?.data?.error || "Upload failed");
     }
     setLoading(false);
   };
 
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(secureLink);
+    alert("Secure link copied");
+  };
+
+  const handleShare = async () => {
+    if (navigator.share) {
+      await navigator.share({
+        title: "Privyra Secure Image",
+        url: secureLink,
+      });
+    } else {
+      alert("Sharing not supported");
+    }
+  };
+
   const handleDisplay = async () => {
-    if (!linkInput) return alert("Please enter a secure link!");
+    if (!linkInput) return alert("Enter secure link");
     setLoading(true);
     try {
       const res = await axios.get(linkInput, { responseType: "blob" });
-      const url = URL.createObjectURL(res.data);
-      setDisplayedImage(url);
-    } catch (err) {
-      console.error("Display error:", err.response || err.message || err);
-      const msg =
-        err.response?.data?.error ||
-        err.response?.data?.message ||
-        err.message ||
-        "Cannot display image!";
-      alert(msg);
+      setDisplayedImage(URL.createObjectURL(res.data));
+    } catch {
+      alert("Cannot display image");
     }
     setLoading(false);
   };
 
   return (
-    <div style={{ padding: "1rem" }}>
-      <h2>Upload a Secure Image</h2>
-      <input type="file" onChange={handleFileChange} />
-      <input
-        type="text"
-        placeholder="Add watermark text"
-        value={watermark}
-        onChange={(e) => setWatermark(e.target.value)}
-        style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }}
-      />
-      <button onClick={handleUpload} disabled={loading} style={{ padding: "0.5rem 1rem" }}>
-        {loading ? "Uploading..." : "Generate Secure Link"}
-      </button>
+    <>
+      <Header />
 
-      {secureLink && (
-        <div style={{ marginTop: "1rem" }}>
-          <p>Secure Link (copy & share):</p>
+      <div className="home-page">
+        <div className="home-card">
+          <h2 className="home-title">Secure Image Sharing</h2>
+          <p className="home-subtitle">Upload • Share • Auto-Delete</p>
+
+          <label className="upload-box">
+            <input type="file" hidden onChange={handleFileChange} />
+            <span>📁 Upload Image</span>
+          </label>
+
+          <p className="file-name">
+            {file ? file.name : "No file selected"}
+          </p>
+
           <input
-            type="text"
-            value={secureLink}
-            readOnly
-            style={{ width: "100%", padding: "0.5rem" }}
+            className="home-input"
+            placeholder="Optional watermark text"
+            value={watermark}
+            onChange={(e) => setWatermark(e.target.value)}
           />
+
+          <input
+            className="home-input"
+            type="number"
+            placeholder="Expire after (minutes)"
+            value={expiresInMinutes}
+            onChange={(e) => onExpiryChange(e.target.value)}
+            disabled={!!maxViews}
+          />
+
+          <input
+            className="home-input"
+            type="number"
+            placeholder="Max allowed views"
+            value={maxViews}
+            onChange={(e) => onMaxViewsChange(e.target.value)}
+            disabled={!!expiresInMinutes}
+          />
+
+          <button
+            className="primary-btn"
+            onClick={handleUpload}
+            disabled={loading}
+          >
+            {loading ? "Uploading..." : "Generate Secure Link"}
+          </button>
+
+          {secureLink && (
+            <div className="secure-link-box">
+              <p>Secure Link</p>
+              <input value={secureLink} readOnly />
+
+              <div style={{ display: "flex", gap: "12px", marginTop: "12px" }}>
+                <button onClick={handleCopy} style={{ flex: 1 }}>
+                  Copy Link
+                </button>
+                <button onClick={handleShare} style={{ flex: 1 }}>
+                  Share Link
+                </button>
+              </div>
+            </div>
+          )}
+
+          <div className="divider" />
+
+          <input
+            className="home-input neon"
+            placeholder="Paste secure link to view image"
+            value={linkInput}
+            onChange={(e) => setLinkInput(e.target.value)}
+          />
+
+          <button className="success-btn" onClick={handleDisplay}>
+            Display Image
+          </button>
+
+          {displayedImage && (
+            <img
+              src={displayedImage}
+              alt="Secure"
+              className="preview-image"
+              draggable={false}
+              onContextMenu={(e) => e.preventDefault()}
+              style={{ pointerEvents: "none", userSelect: "none" }}
+            />
+          )}
         </div>
-      )}
-
-      <hr style={{ margin: "2rem 0" }} />
-
-      <h2>Display Image from Secure Link</h2>
-      <input
-        type="text"
-        placeholder="Paste secure link here"
-        value={linkInput}
-        onChange={(e) => setLinkInput(e.target.value)}
-        style={{ display: "block", margin: "1rem 0", padding: "0.5rem", width: "100%" }}
-      />
-      <button onClick={handleDisplay} disabled={loading} style={{ padding: "0.5rem 1rem" }}>
-        {loading ? "Loading..." : "Display Image"}
-      </button>
-
-      {displayedImage && (
-        <div style={{ marginTop: "1rem" }}>
-          <img src={displayedImage} alt="Secure" style={{ maxWidth: "100%" }} />
-        </div>
-      )}
-    </div>
+      </div>
+    </>
   );
 }
 
