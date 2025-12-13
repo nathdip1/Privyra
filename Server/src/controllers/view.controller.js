@@ -1,88 +1,95 @@
-import Image from "../models/Image.js";
+import Upload from "../models/upload.model.js";
 
 /*
-  VIEW IMAGE CONTROLLER (ATOMIC)
+  VIEW IMAGE CONTROLLER (ATOMIC + AUDITED)
+  - Requires authenticated user
   - Enforces expiry
   - Enforces max views
-  - Enforces one-time view
-  - Logs access
-  - Prevents race conditions
+  - Enforces revoke
+  - Tracks per-user view count
 */
 export const viewImage = async (req, res) => {
   try {
     const { link } = req.params;
     const now = new Date();
 
-    const ip =
-      req.headers["x-forwarded-for"]?.split(",")[0] ||
-      req.socket.remoteAddress;
-
-    const userAgent = req.headers["user-agent"];
+    // 🔐 Enforce login
+    if (!req.user) {
+      return res.status(401).json({
+        error: "Authentication required to view this image",
+      });
+    }
 
     /* ==================================================
-       ATOMIC QUERY CONDITIONS
+       FIND UPLOAD
     ================================================== */
-    const query = {
+    const upload = await Upload.findOne({
       secureLink: link,
+    });
 
-      // ⏰ Expiry
-      $or: [
-        { expiresAt: null },
-        { expiresAt: { $gt: now } },
-      ],
-
-      // 👁 View limits
-      $expr: {
-        $or: [
-          { $eq: ["$maxViews", null] },
-          { $lt: ["$views", "$maxViews"] },
-        ],
-      },
-    };
-
-    /* ==================================================
-       ATOMIC UPDATE
-    ================================================== */
-    const update = {
-      $inc: { views: 1 },
-      $push: {
-        accessLog: {
-          accessedAt: now,
-          ip,
-          userAgent,
-        },
-      },
-    };
-
-    const image = await Image.findOneAndUpdate(
-      query,
-      update,
-      { new: true }
-    );
+    if (!upload) {
+      return res.status(404).json({
+        error: "Invalid or expired link",
+      });
+    }
 
     /* ==================================================
        BLOCK CONDITIONS
     ================================================== */
-    if (!image) {
+    if (upload.revoked) {
       return res.status(410).json({
-        error: "This link has expired or reached its view limit",
+        error: "This link has been revoked by the owner",
+      });
+    }
+
+    if (upload.expiresAt && upload.expiresAt < now) {
+      return res.status(410).json({
+        error: "This link has expired",
+      });
+    }
+
+    if (
+      upload.maxViews !== null &&
+      upload.views >= upload.maxViews
+    ) {
+      return res.status(410).json({
+        error: "This link has reached its view limit",
       });
     }
 
     /* ==================================================
-       ONE-TIME VIEW ENFORCEMENT
+       PER-USER VIEW TRACKING
     ================================================== */
-    if (image.oneTimeView && image.views > 1) {
-      return res.status(410).json({
-        error: "This image was already viewed",
+    const viewerId = req.user.id;
+    const viewerUsername = req.user.username;
+
+    const existingLog = upload.viewLogs.find(
+      (v) => v.viewerId.toString() === viewerId
+    );
+
+    if (existingLog) {
+      existingLog.viewCount += 1;
+      existingLog.lastViewedAt = now;
+    } else {
+      upload.viewLogs.push({
+        viewerId,
+        viewerUsername,
+        viewCount: 1,
+        lastViewedAt: now,
       });
     }
+
+    /* ==================================================
+       GLOBAL VIEW COUNT
+    ================================================== */
+    upload.views += 1;
+
+    await upload.save();
 
     /* ==================================================
        REDIRECT TO IMAGE
     ================================================== */
-    return res.redirect(image.url);
-
+    return res.redirect(upload.url);
   } catch (err) {
     console.error("VIEW ERROR:", err);
     return res.status(500).json({

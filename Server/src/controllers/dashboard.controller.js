@@ -1,38 +1,38 @@
-import Image from "../models/Image.js";
+import Upload from "../models/upload.model.js";
 
 export const getMyUploads = async (req, res) => {
   try {
-    const userId = req.user._id;
+    const userId = req.user.id; // ✅ FIX
 
-    const images = await Image.find({ uploadedBy: userId })
+    const uploads = await Upload.find({ uploadedBy: userId })
       .sort({ createdAt: -1 })
       .select(
-        "secureLink views maxViews oneTimeView expiresAt createdAt"
+        "secureLink url views maxViews expiresAt revoked createdAt viewLogs"
       );
 
-    res.json(images);
+    res.json(uploads);
   } catch (err) {
     console.error("DASHBOARD ERROR:", err);
     res.status(500).json({ error: "Failed to fetch uploads" });
   }
 };
 
-/* 🔥 Revoke link manually */
 export const revokeLink = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const image = await Image.findOne({
+    const upload = await Upload.findOne({
       _id: id,
-      uploadedBy: req.user._id,
+      uploadedBy: req.user.id, // ✅ FIX
     });
 
-    if (!image) {
-      return res.status(404).json({ error: "Image not found" });
+    if (!upload) {
+      return res.status(404).json({ error: "Upload not found" });
     }
 
-    image.expiresAt = new Date(); // expire immediately
-    await image.save();
+    upload.revoked = true;
+    upload.expiresAt = new Date();
+    await upload.save();
 
     res.json({ message: "Link revoked" });
   } catch (err) {

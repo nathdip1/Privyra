@@ -13,6 +13,11 @@ function Header() {
     navigate("/login");
   };
 
+  const goToDashboard = () => {
+    setOpen(false);
+    navigate("/dashboard");
+  };
+
   return (
     <header className="neon-header">
       {/* LEFT: Logo + Brand */}
@@ -22,7 +27,6 @@ function Header() {
         <div className="brand-text">
           <span className="logo-text">Privyra</span>
 
-          {/* ✅ NEW TAGLINE */}
           <span className="brand-tagline">
             End-to-End Encryption isn’t a promise — it’s our technology.
           </span>
@@ -33,7 +37,7 @@ function Header() {
         </div>
       </div>
 
-      {/* CENTER: Scrolling message */}
+      {/* CENTER: Scrolling notice */}
       <div className="header-center">
         <div className="ticker">
           <span>
@@ -43,31 +47,32 @@ function Header() {
         </div>
       </div>
 
-      {/* RIGHT: Profile */}
+      {/* RIGHT: Profile Avatar */}
       {currentUser && (
         <div className="header-right">
           <div
-  className="profile-circle"
-  onClick={() => setOpen((prev) => !prev)}
->
-  <img
-    src="/avatar.png"
-    alt="Profile Avatar"
-    className="profile-avatar"
-  />
-</div>
+            className="profile-circle"
+            onClick={() => setOpen((prev) => !prev)}
+          >
+            <img
+              src="/avatar.png"
+              alt="Profile Avatar"
+              className="profile-avatar"
+            />
+          </div>
 
           {open && (
             <div className="profile-dropdown">
-              <button onClick={() => navigate("/profile")}>Profile</button>
-              <button onClick={() => navigate("/messages")}>Messages</button>
-              <button onClick={() => navigate("/notifications")}>
-                Notifications
+              <button onClick={goToDashboard}>
+                Dashboard
               </button>
 
               <div className="dropdown-divider" />
 
-              <button className="logout-btn" onClick={handleLogout}>
+              <button
+                className="logout-btn"
+                onClick={handleLogout}
+              >
                 Logout
               </button>
             </div>

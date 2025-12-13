@@ -1,6 +1,6 @@
 import cloudinary from "cloudinary";
 import crypto from "crypto";
-import Image from "../models/Image.js";
+import Upload from "../models/upload.model.js";
 
 cloudinary.v2.config({
   cloud_name: process.env.CLOUD_NAME,
@@ -13,6 +13,7 @@ export const uploadImage = async (req, res) => {
     if (!req.file) {
       return res.status(400).json({ error: "No file uploaded" });
     }
+
     if (!req.user) {
       return res.status(401).json({ error: "Unauthorized" });
     }
@@ -29,9 +30,9 @@ export const uploadImage = async (req, res) => {
        2️⃣ EXPIRY / VIEW SETTINGS (FROM UI)
     ----------------------------------- */
     const {
-      expiresInMinutes,   // number | undefined
-      maxViews,           // number | undefined
-      oneTimeView         // boolean | undefined
+      expiresInMinutes, // number | undefined
+      maxViews,         // number | undefined
+      oneTimeView,      // boolean | undefined
     } = req.body;
 
     const expiresAt = expiresInMinutes
@@ -92,9 +93,9 @@ export const uploadImage = async (req, res) => {
         }
 
         /* -----------------------------------
-           5️⃣ SAVE TO DATABASE
+           5️⃣ SAVE TO DATABASE (UPLOAD MODEL)
         ----------------------------------- */
-        const image = await Image.create({
+        const upload = await Upload.create({
           url: uploadResult.secure_url,
           secureLink: uploadResult.secure_url,
           uploadedBy: req.user._id,
@@ -105,10 +106,11 @@ export const uploadImage = async (req, res) => {
           maxViews: allowedViews,
           views: 0,
 
-          auditLog: [], // will be filled on view
+          revoked: false,
+          viewLogs: [], // 🔐 per-user view tracking starts empty
         });
 
-        res.json({ secureLink: image.secureLink });
+        res.json({ secureLink: upload.secureLink });
       }
     );
 
