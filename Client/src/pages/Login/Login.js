@@ -2,6 +2,7 @@ import React, { useState, useContext } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { validateUsername, validatePassword } from "../../utils/validators";
 import { AuthContext } from "../../context/AuthContext";
+import "../../styles/auth.css";
 
 function Login() {
   const navigate = useNavigate();
@@ -35,11 +36,7 @@ function Login() {
       });
 
       const data = await res.json();
-
-      if (!res.ok) {
-        setError({ login: data.message });
-        return;
-      }
+      if (!res.ok) return setError({ login: data.message });
 
       login({ username: data.username, token: data.token });
       navigate("/");
@@ -49,66 +46,37 @@ function Login() {
   };
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        padding: "2rem 1rem",
-        backgroundColor: "#eef2ff",
-      }}
-    >
-      {/* Logo + Heading */}
-      <div style={{ textAlign: "center", marginBottom: "1.5rem" }}>
-        <img
-          src={process.env.PUBLIC_URL + "/logo.png"}
-          alt="Privyra Logo"
-          style={{
-            maxWidth: "160px",
-            width: "60%",
-            marginBottom: "1rem",
-          }}
-        />
-        <h2>Welcome back to Privyra</h2>
-        <p style={{ color: "#555" }}>
-          Log in to securely access your account.
-        </p>
-      </div>
+    <div className="auth-page">
+      <img src="/logo.png" alt="Privyra" className="auth-logo" />
+      <h2 className="auth-title">Welcome back to Privyra</h2>
+      <p className="auth-subtitle">Log in to securely access your account.</p>
 
-      {/* Login Form */}
-      <div className="form-container">
+      <div className="auth-card">
         <form onSubmit={handleSubmit}>
-          <label>Username</label>
           <input
-            type="text"
+            placeholder="Username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            placeholder="Enter your username"
           />
           {error.username && <p style={{ color: "red" }}>{error.username}</p>}
 
-          <label>Password</label>
           <input
             type="password"
+            placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="Enter your password"
+            style={{ marginTop: "10px" }}
           />
           {error.password && <p style={{ color: "red" }}>{error.password}</p>}
 
-          {error.login && (
-            <p style={{ color: "red", textAlign: "center" }}>
-              {error.login}
-            </p>
-          )}
+          {error.login && <p style={{ color: "red" }}>{error.login}</p>}
 
-          <button type="submit" style={{ marginTop: "12px" }}>
+          <button type="submit" style={{ marginTop: "14px", width: "100%" }}>
             Login
           </button>
         </form>
 
-        <p style={{ marginTop: "1rem", textAlign: "center" }}>
+        <p style={{ marginTop: "12px", textAlign: "center" }}>
           Don’t have an account? <Link to="/signup">Sign Up</Link>
         </p>
       </div>

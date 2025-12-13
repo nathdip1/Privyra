@@ -3,6 +3,7 @@ import React, { useState, useContext } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { validateUsername, validatePassword } from "../../utils/validators";
 import { AuthContext } from "../../context/AuthContext";
+import "../../styles/auth.css";
 
 function Signup() {
   const navigate = useNavigate();
@@ -59,42 +60,26 @@ function Signup() {
   };
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        flexDirection: "column",
-        padding: "1rem",
-        backgroundColor: "#eef2ff",
-      }}
-    >
-      {/* Logo + Heading */}
-      <div style={{ textAlign: "center", marginBottom: "1.5rem" }}>
+    <div className="auth-page">
+      {/* Logo */}
+      <div className="auth-header">
         <img
           src={process.env.PUBLIC_URL + "/logo.png"}
           alt="Privyra Logo"
+          className="auth-logo"
           style={{
-            maxWidth: "160px",
-            width: "50%",
-            height: "auto",
-            marginBottom: "1rem",
-            transition: "transform 0.3s ease",
-            transform: hovered ? "scale(1.05)" : "scale(1)",
-            cursor: "pointer",
+            transform: hovered ? "scale(1.08)" : "scale(1)",
           }}
           onMouseEnter={() => setHovered(true)}
           onMouseLeave={() => setHovered(false)}
         />
+
         <h2>Create your Privyra Account</h2>
-        <p style={{ color: "#555" }}>
-          Join Privyra to manage secure access.
-        </p>
+        <p>Join Privyra to manage secure access.</p>
       </div>
 
-      {/* Form */}
-      <div className="form-container">
+      {/* Signup Form */}
+      <div className="form-container neon-card">
         <form onSubmit={handleSubmit}>
           <input
             type="text"
@@ -102,68 +87,48 @@ function Signup() {
             value={username}
             onChange={(e) => setUsername(e.target.value)}
           />
-          {errors.username && <p style={{ color: "red" }}>{errors.username}</p>}
+          {errors.username && <p className="error">{errors.username}</p>}
 
           <input
             type="password"
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            style={{ marginTop: "0.75rem" }}
           />
-          {errors.password && <p style={{ color: "red" }}>{errors.password}</p>}
+          {errors.password && <p className="error">{errors.password}</p>}
 
           <input
             type="password"
             placeholder="Confirm Password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            style={{ marginTop: "0.75rem" }}
           />
           {errors.confirmPassword && (
-            <p style={{ color: "red" }}>{errors.confirmPassword}</p>
+            <p className="error">{errors.confirmPassword}</p>
           )}
 
-          {/* ✅ FIXED CHECKBOX ALIGNMENT */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "0.5rem",
-              marginTop: "1rem",
-            }}
-          >
-            <input
-              type="checkbox"
-              checked={termsAccepted}
-              onChange={(e) => setTermsAccepted(e.target.checked)}
-              style={{
-                width: "18px",
-                height: "18px",
-                flexShrink: 0,
-              }}
-            />
-            <span>
-              I accept the{" "}
-              <Link to="/terms" style={{ fontWeight: "bold" }}>
-                Terms & Conditions
-              </Link>
-            </span>
+          {/* ✅ FIXED TERMS ALIGNMENT */}
+          <div className="terms-row">
+            <label className="terms-label">
+              <input
+                type="checkbox"
+                checked={termsAccepted}
+                onChange={(e) => setTermsAccepted(e.target.checked)}
+              />
+              <span>
+                I accept the <Link to="/terms">Terms & Conditions</Link>
+              </span>
+            </label>
           </div>
+          {errors.terms && <p className="error">{errors.terms}</p>}
 
-          {errors.terms && <p style={{ color: "red" }}>{errors.terms}</p>}
-          {errors.server && <p style={{ color: "red" }}>{errors.server}</p>}
-
-          <button type="submit" style={{ marginTop: "1rem", width: "100%" }}>
+          <button type="submit" className="primary-btn">
             Sign Up
           </button>
         </form>
 
-        <p style={{ marginTop: "1rem", textAlign: "center" }}>
-          Already have an account?{" "}
-          <Link to="/login" style={{ fontWeight: "bold" }}>
-            Login
-          </Link>
+        <p className="auth-switch">
+          Already have an account? <Link to="/login">Login</Link>
         </p>
       </div>
     </div>
