@@ -5,6 +5,8 @@ import { validateUsername, validatePassword } from "../../utils/validators";
 import { AuthContext } from "../../context/AuthContext";
 import "../../styles/auth.css";
 
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+
 function Login() {
   const navigate = useNavigate();
   const { login } = useContext(AuthContext);
@@ -31,7 +33,7 @@ function Login() {
     if (Object.keys(newErrors).length !== 0) return;
 
     try {
-      const res = await fetch("http://localhost:5000/api/auth/login", {
+      const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
@@ -70,7 +72,6 @@ function Login() {
         <p>Log in to securely access your account.</p>
       </div>
 
-      {/* ✅ SAME WIDTH AS SIGNUP */}
       <div className="form-container neon-card">
         <form onSubmit={handleSubmit}>
           <input

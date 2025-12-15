@@ -1,10 +1,15 @@
 import React, { useEffect, useState, useContext } from "react";
 import axios from "axios";
 import { AuthContext } from "../../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 import "../../styles/dashboard.css";
+
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 function Dashboard() {
   const { currentUser } = useContext(AuthContext);
+  const navigate = useNavigate();
+
   const [uploads, setUploads] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -12,7 +17,7 @@ function Dashboard() {
     const fetchUploads = async () => {
       try {
         const res = await axios.get(
-          "http://localhost:5000/api/dashboard/my-uploads",
+          `${API_BASE_URL}/api/dashboard/my-uploads`,
           {
             headers: {
               Authorization: `Bearer ${currentUser.token}`,
@@ -33,7 +38,7 @@ function Dashboard() {
 
   const revoke = async (id) => {
     await axios.post(
-      `http://localhost:5000/api/dashboard/revoke/${id}`,
+      `${API_BASE_URL}/api/dashboard/revoke/${id}`,
       {},
       {
         headers: {
@@ -47,11 +52,6 @@ function Dashboard() {
         u._id === id ? { ...u, revoked: true } : u
       )
     );
-  };
-
-  const copyLink = (link) => {
-    navigator.clipboard.writeText(link);
-    alert("Secure link copied");
   };
 
   const now = new Date();
@@ -79,6 +79,25 @@ function Dashboard() {
 
   return (
     <div className="dashboard">
+      {/* 🔹 TOP BAR */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          marginBottom: "16px",
+        }}
+      >
+        <button
+          className="revoke-btn"
+          style={{
+            boxShadow: "0 0 12px rgba(0, 255, 255, 0.6)",
+          }}
+          onClick={() => navigate("/")}
+        >
+          ← Go Back
+        </button>
+      </div>
+
       <h2 className="dashboard-title">Dashboard</h2>
 
       {/* 🔹 ANALYTICS CARDS */}
@@ -117,17 +136,6 @@ function Dashboard() {
                 Revoke
               </button>
             )}
-          </div>
-
-          {/* LINK */}
-          <div className="link-row">
-            <input value={u.secureLink} readOnly />
-            <button
-              className="copy-btn"
-              onClick={() => copyLink(u.secureLink)}
-            >
-              Copy
-            </button>
           </div>
 
           {/* STATS */}

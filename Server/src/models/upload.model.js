@@ -1,90 +1,70 @@
 import mongoose from "mongoose";
 
-const viewLogSchema = new mongoose.Schema(
-  {
-    viewerId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
-    viewerUsername: {
-      type: String,
-      required: true,
-    },
-    viewCount: {
-      type: Number,
-      default: 1,
-    },
-    lastViewedAt: {
-      type: Date,
-      default: Date.now,
-    },
+const viewLogSchema = new mongoose.Schema({
+  viewerId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
   },
-  { _id: false }
-);
+  viewerUsername: String,
+  viewCount: {
+    type: Number,
+    default: 1,
+  },
+  lastViewedAt: {
+    type: Date,
+    default: Date.now,
+  },
+});
 
 const uploadSchema = new mongoose.Schema(
   {
-    // Cloudinary URL
-    url: {
+    token: {
       type: String,
+      required: true,
+      unique: true,
+    },
+
+    fileId: {
+      type: mongoose.Schema.Types.ObjectId,
       required: true,
     },
 
-    // Owner of the upload
     uploadedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
 
-    // Optional watermark text
-    watermark: {
-      type: String,
-    },
+    fileSize: Number,
 
-    // Secure access link
-    secureLink: {
+    mimeType: String,
+
+    // ✅ CRITICAL FIX
+    iv: {
       type: String,
       required: true,
-      unique: true,
     },
 
-    // Total number of views (all users)
-    views: {
-      type: Number,
-      default: 0,
-    },
+    expiresAt: Date,
 
-    // Optional max views limit
     maxViews: {
       type: Number,
       default: null,
     },
 
-    // Optional expiry time
-    expiresAt: {
-      type: Date,
-      default: null,
+    views: {
+      type: Number,
+      default: 0,
     },
 
-    // Manual revoke flag
     revoked: {
       type: Boolean,
       default: false,
     },
 
-    // 🔐 NEW: Per-user view tracking
-    viewLogs: {
-      type: [viewLogSchema],
-      default: [],
-    },
+    viewLogs: [viewLogSchema],
   },
-  {
-    timestamps: true, // keeps createdAt & updatedAt (matches your data)
-  }
+  { timestamps: true }
 );
 
-const Upload = mongoose.model("Upload", uploadSchema);
-
-export default Upload;
+export default mongoose.model("Upload", uploadSchema);

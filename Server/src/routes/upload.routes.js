@@ -5,10 +5,13 @@ import { authMiddleware } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
-const storage = multer.memoryStorage();
-const upload = multer({ storage });
+/*
+  Multer is kept ONLY to parse form fields.
+  Encrypted data is NOT treated as a file.
+*/
+const upload = multer();
 
-// FIXED ORDER: auth → multer → controller
-router.post("/", authMiddleware, upload.single("image"), uploadImage);
+// ✅ auth → multer (no files) → controller
+router.post("/", authMiddleware, upload.none(), uploadImage);
 
 export default router;
