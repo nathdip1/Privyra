@@ -169,6 +169,28 @@ function Home() {
   };
 
   /* ===============================
+     SHARE HANDLER
+  =============================== */
+  const handleShare = async () => {
+    if (!secureLink) return;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: "Privyra Secure Link",
+          text: "View this secure image using Privyra",
+          url: secureLink,
+        });
+      } catch {
+        // user cancelled share → no action needed
+      }
+    } else {
+      navigator.clipboard.writeText(secureLink);
+      alert("Link copied. You can share it manually.");
+    }
+  };
+
+  /* ===============================
      VIEW → DECRYPT → DISPLAY
   =============================== */
   const handleDisplay = async () => {
@@ -277,13 +299,38 @@ function Home() {
             <div className="secure-link-box">
               <p>Secure Link</p>
               <input value={secureLink} readOnly />
-              <button
-                onClick={() =>
-                  navigator.clipboard.writeText(secureLink)
-                }
+
+              {/* 🔹 BUTTON ROW */}
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  gap: "16px",
+                  marginTop: "12px",
+                }}
               >
-                Copy Link
-              </button>
+                <button
+                  style={{
+                    padding: "10px 16px",
+                    minWidth: "120px",
+                  }}
+                  onClick={() =>
+                    navigator.clipboard.writeText(secureLink)
+                  }
+                >
+                  Copy Link
+                </button>
+
+                <button
+                  style={{
+                    padding: "10px 16px",
+                    minWidth: "120px",
+                  }}
+                  onClick={handleShare}
+                >
+                  Share
+                </button>
+              </div>
             </div>
           )}
 

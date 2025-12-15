@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import "../styles/header.css";
@@ -7,6 +7,9 @@ function Header() {
   const { currentUser, logout } = useContext(AuthContext);
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+
+  // 🔹 Ref to detect outside clicks
+  const profileRef = useRef(null);
 
   const handleLogout = () => {
     logout();
@@ -17,6 +20,24 @@ function Header() {
     setOpen(false);
     navigate("/dashboard");
   };
+
+  // 🔹 Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        profileRef.current &&
+        !profileRef.current.contains(event.target)
+      ) {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   return (
     <header className="neon-header">
@@ -49,7 +70,7 @@ function Header() {
 
       {/* RIGHT: Profile Avatar */}
       {currentUser && (
-        <div className="header-right">
+        <div className="header-right" ref={profileRef}>
           <div
             className="profile-circle"
             onClick={() => setOpen((prev) => !prev)}

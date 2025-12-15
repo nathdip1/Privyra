@@ -41,11 +41,17 @@
   line-height: 1.1;
 }
 
+.brand-tagline {
+  font-size: 13.5px;
+  color: #c8faff;
+  margin-top: 4px;
+  text-shadow: 0 0 6px rgba(0, 255, 255, 0.35);
+}
+
 .brand-subtitle {
   font-size: 12px;
   color: #aab0ff;
   margin-top: 2px;
-  white-space: nowrap;
 }
 
 /* ---------- RIGHT PROFILE ---------- */
@@ -59,14 +65,19 @@
   height: 42px;
   border-radius: 50%;
   background: linear-gradient(135deg, #00ffff, #7f00ff);
-  color: #000;
-  font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   box-shadow: 0 0 15px rgba(0, 255, 255, 0.7);
   user-select: none;
+}
+
+.profile-avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
 }
 
 .profile-dropdown {
@@ -107,9 +118,7 @@
   color: #ff4d4d;
 }
 
-/* ======================================================
-   ✅ NEW FEATURE: CENTER SCROLLING WARNING / SUGGESTION
-   ====================================================== */
+/* ---------- CENTER TICKER (DESKTOP) ---------- */
 
 .header-center {
   position: absolute;
@@ -118,23 +127,18 @@
   max-width: 45%;
   overflow: hidden;
   white-space: nowrap;
-  pointer-events: none; /* does not block clicks */
-}
-
-.header-center .ticker {
-  display: inline-block;
+  pointer-events: none;
 }
 
 .header-center .ticker span {
   display: inline-block;
   padding-left: 100%;
   animation: header-scroll-text 18s linear infinite;
-  color: #facc15; /* warning yellow */
+  color: #facc15;
   font-size: 13px;
   text-shadow: 0 0 8px rgba(250, 204, 21, 0.6);
 }
 
-/* Smooth left-to-right scroll */
 @keyframes header-scroll-text {
   0% {
     transform: translateX(0%);
@@ -144,24 +148,53 @@
   }
 }
 
-/* Hide ticker on small screens */
+/* ======================================================
+   📱 MOBILE RESPONSIVE (TEXT LEFT, NO OVERLAP)
+   ====================================================== */
+
 @media (max-width: 768px) {
-  .header-center {
-    display: none;
+  .neon-header {
+    height: auto;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 10px 16px;
+    gap: 8px;
   }
-}
 
-.brand-tagline {
-  font-size: 13.5px; /* slightly bigger than subtitle */
-  color: #c8faff;
-  margin-top: 4px;
-  text-shadow: 0 0 6px rgba(0, 255, 255, 0.35);
-  white-space: nowrap;
-}
+  /* LEFT ALIGN EVERYTHING */
+  .header-left {
+    align-items: flex-start;
+  }
 
-.profile-avatar {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  object-fit: cover;
+  .brand-text {
+    align-items: flex-start;
+    padding-right: 64px; /* reserve space for profile icon */
+  }
+
+  /* Allow wrapping but keep logical lines */
+  .brand-tagline,
+  .brand-subtitle {
+    white-space: normal;
+  }
+
+  /* SHOW ticker below brand */
+  .header-center {
+    position: relative;
+    left: 0;
+    transform: none;
+    max-width: 100%;
+    display: block;
+  }
+
+  .header-center .ticker span {
+    font-size: 12px;
+    animation-duration: 22s;
+  }
+
+  /* Profile icon stays top-right */
+  .header-right {
+    position: absolute;
+    top: 10px;
+    right: 16px;
+  }
 }
