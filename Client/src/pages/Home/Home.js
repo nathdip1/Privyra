@@ -5,6 +5,7 @@ import "../../styles/home.css";
 import Header from "../../components/Header";
 import { encryptFile } from "../../crypto/encrypt";
 import { decryptData } from "../../crypto/decrypt";
+import DisplayImage from "../../components/DisplayImage";
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
@@ -24,6 +25,7 @@ function Home() {
   const [loading, setLoading] = useState(false);
 
   const [warning, setWarning] = useState("");
+  const [watermark, setWatermark] = useState("");
 
   useEffect(() => {
     const blur = () => (document.body.style.filter = "blur(12px)");
@@ -122,8 +124,7 @@ function Home() {
       Number(maxViews) <= 0 ||
       Number(maxViews) > 10);
 
-  const isGenerateDisabled =
-    loading || isInvalidExpiry || isInvalidViews;
+  const isGenerateDisabled = loading || isInvalidExpiry || isInvalidViews;
 
   /* ===============================
      UPLOAD (ENCRYPT → GRIDFS)
@@ -146,18 +147,13 @@ function Home() {
         formData.append("expiresInMinutes", expiresInMinutes);
       if (maxViews) formData.append("maxViews", maxViews);
 
-      const res = await axios.post(
-        `${API_BASE_URL}/api/upload`,
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${currentUser.token}`,
-          },
-        }
-      );
+      const res = await axios.post(`${API_BASE_URL}/api/upload`, formData, {
+        headers: {
+          Authorization: `Bearer ${currentUser.token}`,
+        },
+      });
 
-      const finalLink =
-        `${window.location.origin}${res.data.viewLink}#${encrypted.key}`;
+      const finalLink = `${window.location.origin}${res.data.viewLink}#${encrypted.key}`;
 
       setSecureLink(finalLink);
     } catch (err) {
@@ -203,14 +199,11 @@ function Home() {
 
       setLoading(true);
 
-      const res = await axios.get(
-        `${API_BASE_URL}${url.pathname}`,
-        {
-          headers: {
-            Authorization: `Bearer ${currentUser.token}`,
-          },
-        }
-      );
+      const res = await axios.get(`${API_BASE_URL}${url.pathname}`, {
+        headers: {
+          Authorization: `Bearer ${currentUser.token}`,
+        },
+      });
 
       const { encryptedData, iv, mimeType } = res.data;
 
@@ -245,9 +238,15 @@ function Home() {
             <span>📁 Upload Image</span>
           </label>
 
-          <p className="file-name">
-            {file ? file.name : "No file selected"}
-          </p>
+          <p className="file-name">{file ? file.name : "No file selected"}</p>
+          <input
+            className="home-input"
+            type="text"
+            placeholder="Optional watermark (max 50 characters)"
+            maxLength={50}
+            value={watermark}
+            onChange={(e) => setWatermark(e.target.value)}
+          />
 
           <input
             className="home-input"
@@ -314,9 +313,7 @@ function Home() {
                     padding: "10px 16px",
                     minWidth: "120px",
                   }}
-                  onClick={() =>
-                    navigator.clipboard.writeText(secureLink)
-                  }
+                  onClick={() => navigator.clipboard.writeText(secureLink)}
                 >
                   Copy Link
                 </button>
@@ -348,17 +345,7 @@ function Home() {
           </button>
 
           {displayedImage && (
-            <img
-              src={displayedImage}
-              alt="Secure"
-              className="preview-image"
-              draggable={false}
-              onContextMenu={(e) => e.preventDefault()}
-              style={{
-                pointerEvents: "none",
-                userSelect: "none",
-              }}
-            />
+            <DisplayImage imageUrl={displayedImage} watermark={watermark} />
           )}
         </div>
       </div>

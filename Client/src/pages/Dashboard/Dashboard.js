@@ -48,6 +48,32 @@ function Dashboard() {
     return "active";
   };
 
+  /* ===============================
+     🔴 REVOKE LINK (RESTORED)
+  =============================== */
+  const revoke = async (id) => {
+    try {
+      await axios.post(
+        `${API_BASE_URL}/api/dashboard/revoke/${id}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${currentUser.token}`,
+          },
+        }
+      );
+
+      // update UI immediately
+      setUploads((prev) =>
+        prev.map((u) =>
+          u._id === id ? { ...u, revoked: true } : u
+        )
+      );
+    } catch (err) {
+      alert("Failed to revoke link");
+    }
+  };
+
   if (loading) {
     return <p className="loading">Loading dashboard...</p>;
   }
@@ -105,10 +131,21 @@ function Dashboard() {
 
       {uploads.map((u) => (
         <div key={u._id} className="upload-card">
+          {/* HEADER */}
           <div className="upload-header">
             <span className={`badge ${getStatus(u)}`}>
               {getStatus(u).toUpperCase()}
             </span>
+
+            {/* 🔴 REVOKE BUTTON (ONLY IF ACTIVE) */}
+            {getStatus(u) === "active" && (
+              <button
+                className="revoke-btn"
+                onClick={() => revoke(u._id)}
+              >
+                Revoke
+              </button>
+            )}
           </div>
 
           <p className="meta">
@@ -131,7 +168,9 @@ function Dashboard() {
                     → {v.viewCount} time
                     {v.viewCount > 1 ? "s" : ""}
                     <span className="time">
-                      {new Date(v.lastViewedAt).toLocaleString()}
+                      {new Date(
+                        v.lastViewedAt
+                      ).toLocaleString()}
                     </span>
                   </li>
                 ))}
