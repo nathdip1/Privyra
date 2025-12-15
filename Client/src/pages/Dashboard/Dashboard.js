@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useContext } from "react";
 import axios from "axios";
-import { AuthContext } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../../context/AuthContext";
 import "../../styles/dashboard.css";
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
@@ -36,42 +36,17 @@ function Dashboard() {
     }
   }, [currentUser]);
 
-  const revoke = async (id) => {
-    await axios.post(
-      `${API_BASE_URL}/api/dashboard/revoke/${id}`,
-      {},
-      {
-        headers: {
-          Authorization: `Bearer ${currentUser.token}`,
-        },
-      }
-    );
-
-    setUploads((prev) =>
-      prev.map((u) =>
-        u._id === id ? { ...u, revoked: true } : u
-      )
-    );
+  const goBack = () => {
+    navigate("/");
   };
 
   const now = new Date();
 
   const getStatus = (u) => {
     if (u.revoked) return "revoked";
-    if (u.expiresAt && new Date(u.expiresAt) < now)
-      return "expired";
+    if (u.expiresAt && new Date(u.expiresAt) < now) return "expired";
     return "active";
   };
-
-  /* 🔹 ANALYTICS */
-  const totalUploads = uploads.length;
-  const totalViews = uploads.reduce(
-    (sum, u) => sum + u.views,
-    0
-  );
-  const activeLinks = uploads.filter(
-    (u) => getStatus(u) === "active"
-  ).length;
 
   if (loading) {
     return <p className="loading">Loading dashboard...</p>;
@@ -79,40 +54,48 @@ function Dashboard() {
 
   return (
     <div className="dashboard">
-      {/* 🔹 TOP BAR */}
+      {/* 🔹 TITLE ROW */}
       <div
         style={{
           display: "flex",
+          justifyContent: "space-between",
           alignItems: "center",
-          marginBottom: "16px",
+          marginBottom: "1.5rem",
         }}
       >
+        <h2 className="dashboard-title" style={{ margin: 0 }}>
+          Dashboard
+        </h2>
+
         <button
           className="revoke-btn"
-          style={{
-            boxShadow: "0 0 12px rgba(0, 255, 255, 0.6)",
-          }}
-          onClick={() => navigate("/")}
+          onClick={goBack}
+          style={{ padding: "6px 12px" }}
         >
-          ← Go Back
+          Go Back
         </button>
       </div>
 
-      <h2 className="dashboard-title">Dashboard</h2>
-
-      {/* 🔹 ANALYTICS CARDS */}
+      {/* 🔹 ANALYTICS */}
       <div className="analytics">
         <div className="card">
           <span>Total Uploads</span>
-          <strong>{totalUploads}</strong>
+          <strong>{uploads.length}</strong>
         </div>
         <div className="card">
           <span>Total Views</span>
-          <strong>{totalViews}</strong>
+          <strong>
+            {uploads.reduce((sum, u) => sum + u.views, 0)}
+          </strong>
         </div>
         <div className="card">
           <span>Active Links</span>
-          <strong>{activeLinks}</strong>
+          <strong>
+            {
+              uploads.filter((u) => getStatus(u) === "active")
+                .length
+            }
+          </strong>
         </div>
       </div>
 
@@ -122,29 +105,17 @@ function Dashboard() {
 
       {uploads.map((u) => (
         <div key={u._id} className="upload-card">
-          {/* HEADER */}
           <div className="upload-header">
             <span className={`badge ${getStatus(u)}`}>
               {getStatus(u).toUpperCase()}
             </span>
-
-            {!u.revoked && (
-              <button
-                className="revoke-btn"
-                onClick={() => revoke(u._id)}
-              >
-                Revoke
-              </button>
-            )}
           </div>
 
-          {/* STATS */}
           <p className="meta">
             Views: {u.views}
             {u.maxViews ? ` / ${u.maxViews}` : ""}
           </p>
 
-          {/* VIEW HISTORY */}
           <div className="views-log">
             <strong>View history</strong>
 
@@ -160,9 +131,7 @@ function Dashboard() {
                     → {v.viewCount} time
                     {v.viewCount > 1 ? "s" : ""}
                     <span className="time">
-                      {new Date(
-                        v.lastViewedAt
-                      ).toLocaleString()}
+                      {new Date(v.lastViewedAt).toLocaleString()}
                     </span>
                   </li>
                 ))}

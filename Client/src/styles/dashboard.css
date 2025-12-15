@@ -123,3 +123,14 @@
   text-align: center;
   margin-top: 2rem;
 }
+
+/* =====================================================
+   📱 MOBILE — SAFE TOP GAP (FINAL)
+   ===================================================== */
+@media (max-width: 768px) {
+  .dashboard {
+    padding-top: 3.70rem;   /* ⬅ increased slightly to avoid browser bar overlap */
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
