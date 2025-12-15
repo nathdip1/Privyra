@@ -1,92 +1,127 @@
-import Image from "../models/Image.js";
+import Upload from "../models/upload.model.js";
+import { getGridFSBucket } from "../utils/gridfs.js";
+import mongoose from "mongoose";
 
 /*
-  VIEW IMAGE CONTROLLER (ATOMIC)
-  - Enforces expiry
-  - Enforces max views
-  - Enforces one-time view
-  - Logs access
-  - Prevents race conditions
+  ZERO-KNOWLEDGE VIEW CONTROLLER
+  - Auth required
+  - Enforces expiry / revoke / maxViews
+  - Streams encrypted bytes
+  - NEVER decrypts
 */
 export const viewImage = async (req, res) => {
   try {
-    const { link } = req.params;
+    const { token } = req.params;
     const now = new Date();
 
-    const ip =
-      req.headers["x-forwarded-for"]?.split(",")[0] ||
-      req.socket.remoteAddress;
+    /* ===============================
+       AUTH CHECK
+    =============================== */
+    if (!req.user) {
+      return res.status(401).json({
+        error: "Authentication required",
+      });
+    }
 
-    const userAgent = req.headers["user-agent"];
+    /* ===============================
+       FIND UPLOAD
+    =============================== */
+    const upload = await Upload.findOne({ token });
 
-    /* ==================================================
-       ATOMIC QUERY CONDITIONS
-    ================================================== */
-    const query = {
-      secureLink: link,
+    if (!upload) {
+      return res.status(404).json({
+        error: "Invalid or expired link",
+      });
+    }
 
-      // ⏰ Expiry
-      $or: [
-        { expiresAt: null },
-        { expiresAt: { $gt: now } },
-      ],
+    /* ===============================
+       SECURITY RULES
+    =============================== */
+    if (upload.revoked) {
+      return res.status(410).json({
+        error: "This link has been revoked",
+      });
+    }
 
-      // 👁 View limits
-      $expr: {
-        $or: [
-          { $eq: ["$maxViews", null] },
-          { $lt: ["$views", "$maxViews"] },
-        ],
-      },
-    };
+    if (upload.expiresAt && upload.expiresAt < now) {
+      return res.status(410).json({
+        error: "This link has expired",
+      });
+    }
 
-    /* ==================================================
-       ATOMIC UPDATE
-    ================================================== */
-    const update = {
-      $inc: { views: 1 },
-      $push: {
-        accessLog: {
-          accessedAt: now,
-          ip,
-          userAgent,
-        },
-      },
-    };
+    if (
+      upload.maxViews !== null &&
+      upload.views >= upload.maxViews
+    ) {
+      return res.status(410).json({
+        error: "This link has reached its view limit",
+      });
+    }
 
-    const image = await Image.findOneAndUpdate(
-      query,
-      update,
-      { new: true }
+    /* ===============================
+       VIEW TRACKING
+    =============================== */
+    const viewerId = req.user._id.toString();
+    const viewerUsername = req.user.username;
+
+    const existingLog = upload.viewLogs.find(
+      (v) => v.viewerId.toString() === viewerId
     );
 
-    /* ==================================================
-       BLOCK CONDITIONS
-    ================================================== */
-    if (!image) {
-      return res.status(410).json({
-        error: "This link has expired or reached its view limit",
+    if (existingLog) {
+      existingLog.viewCount += 1;
+      existingLog.lastViewedAt = now;
+    } else {
+      upload.viewLogs.push({
+        viewerId,
+        viewerUsername,
+        viewCount: 1,
+        lastViewedAt: now,
       });
     }
 
-    /* ==================================================
-       ONE-TIME VIEW ENFORCEMENT
-    ================================================== */
-    if (image.oneTimeView && image.views > 1) {
-      return res.status(410).json({
-        error: "This image was already viewed",
+    upload.views += 1;
+    await upload.save();
+
+    /* ===============================
+       STREAM ENCRYPTED DATA
+    =============================== */
+    const bucket = getGridFSBucket();
+
+    if (!mongoose.Types.ObjectId.isValid(upload.fileId)) {
+      return res.status(500).json({
+        error: "Invalid file reference",
       });
     }
 
-    /* ==================================================
-       REDIRECT TO IMAGE
-    ================================================== */
-    return res.redirect(image.url);
+    const fileId = new mongoose.Types.ObjectId(upload.fileId);
+    const downloadStream = bucket.openDownloadStream(fileId);
 
+    const chunks = [];
+
+    downloadStream.on("data", (chunk) => {
+      chunks.push(chunk);
+    });
+
+    downloadStream.on("error", () => {
+      return res.status(404).json({
+        error: "Encrypted file not found",
+      });
+    });
+
+    downloadStream.on("end", () => {
+      const encryptedBuffer = Buffer.concat(chunks);
+
+      res.json({
+        encryptedData: encryptedBuffer.toString("base64"),
+        iv: upload.iv,
+        mimeType: upload.mimeType,
+      });
+    });
   } catch (err) {
     console.error("VIEW ERROR:", err);
     return res.status(500).json({
-      error: "Cannot fetch image",
+      error: "Failed to fetch encrypted data",
     });
   }
 };

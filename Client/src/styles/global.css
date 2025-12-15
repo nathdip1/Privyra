@@ -6,7 +6,7 @@
 }
 
 html {
-  font-size: 16px; /* Prevents mobile zoom */
+  font-size: 16px;
 }
 
 body {
@@ -16,6 +16,9 @@ body {
   color: #e5e7eb;
   line-height: 1.5;
   min-height: 100vh;
+
+  /* Desktop fixed-header offset */
+  padding-top: 64px;
 }
 
 /* ===============================
@@ -92,14 +95,28 @@ button:disabled {
 }
 
 /* ===============================
-   MOBILE SAFE
+   MOBILE HEADER OFFSET (ULTRA-TIGHT)
 ================================ */
-@media (max-width: 480px) {
+@media (max-width: 768px) {
   body {
-    padding: 0.75rem;
+    padding-top: 72px; /* ⬅ ultra-tight gap */
   }
 }
 
+/* ===============================
+   EXTRA SMALL MOBILE
+================================ */
+@media (max-width: 480px) {
+  body {
+    padding-top: 72px;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+}
+
+/* ===============================
+   DROPDOWN ITEMS
+================================ */
 .dropdown-item {
   display: block;
   padding: 8px 10px;

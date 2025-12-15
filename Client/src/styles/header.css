@@ -13,6 +13,8 @@
   z-index: 1000;
 }
 
+/* ---------- LEFT BRAND ---------- */
+
 .logo-text {
   font-size: 20px;
   font-weight: 600;
@@ -20,6 +22,39 @@
   letter-spacing: 1px;
   text-shadow: 0 0 10px rgba(0, 255, 255, 0.6);
 }
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.app-logo {
+  height: 36px;
+  width: auto;
+  filter: drop-shadow(0 0 6px rgba(0, 255, 255, 0.6));
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.brand-tagline {
+  font-size: 13.5px;
+  color: #c8faff;
+  margin-top: 4px;
+  text-shadow: 0 0 6px rgba(0, 255, 255, 0.35);
+}
+
+.brand-subtitle {
+  font-size: 12px;
+  color: #aab0ff;
+  margin-top: 2px;
+}
+
+/* ---------- RIGHT PROFILE ---------- */
 
 .header-right {
   position: relative;
@@ -30,14 +65,19 @@
   height: 42px;
   border-radius: 50%;
   background: linear-gradient(135deg, #00ffff, #7f00ff);
-  color: #000;
-  font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   box-shadow: 0 0 15px rgba(0, 255, 255, 0.7);
   user-select: none;
+}
+
+.profile-avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
 }
 
 .profile-dropdown {
@@ -77,14 +117,84 @@
 .logout-btn {
   color: #ff4d4d;
 }
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+
+/* ---------- CENTER TICKER (DESKTOP) ---------- */
+
+.header-center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 45%;
+  overflow: hidden;
+  white-space: nowrap;
+  pointer-events: none;
 }
 
-.app-logo {
-  height: 36px;
-  width: auto;
-  filter: drop-shadow(0 0 6px rgba(0, 255, 255, 0.6));
+.header-center .ticker span {
+  display: inline-block;
+  padding-left: 100%;
+  animation: header-scroll-text 18s linear infinite;
+  color: #facc15;
+  font-size: 13px;
+  text-shadow: 0 0 8px rgba(250, 204, 21, 0.6);
+}
+
+@keyframes header-scroll-text {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+/* ======================================================
+   📱 MOBILE RESPONSIVE (TEXT LEFT, NO OVERLAP)
+   ====================================================== */
+
+@media (max-width: 768px) {
+  .neon-header {
+    height: auto;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 10px 16px;
+    gap: 8px;
+  }
+
+  /* LEFT ALIGN EVERYTHING */
+  .header-left {
+    align-items: flex-start;
+  }
+
+  .brand-text {
+    align-items: flex-start;
+    padding-right: 64px; /* reserve space for profile icon */
+  }
+
+  /* Allow wrapping but keep logical lines */
+  .brand-tagline,
+  .brand-subtitle {
+    white-space: normal;
+  }
+
+  /* SHOW ticker below brand */
+  .header-center {
+    position: relative;
+    left: 0;
+    transform: none;
+    max-width: 100%;
+    display: block;
+  }
+
+  .header-center .ticker span {
+    font-size: 12px;
+    animation-duration: 22s;
+  }
+
+  /* Profile icon stays top-right */
+  .header-right {
+    position: absolute;
+    top: 10px;
+    right: 16px;
+  }
 }

@@ -1,0 +1,136 @@
+.dashboard {
+  padding: 2rem;
+  max-width: 1000px;
+  margin: auto;
+  color: #e0ffff;
+}
+
+.dashboard-title {
+  margin-bottom: 1.5rem;
+}
+
+/* ANALYTICS */
+.analytics {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.analytics .card {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 1rem;
+  text-align: center;
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+}
+
+/* UPLOAD CARD */
+.upload-card {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 1.2rem;
+  margin-bottom: 1.5rem;
+}
+
+/* HEADER */
+.upload-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* STATUS BADGES */
+.badge {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.badge.active {
+  background: #16a34a;
+}
+
+.badge.expired {
+  background: #f59e0b;
+}
+
+.badge.revoked {
+  background: #dc2626;
+}
+
+/* LINK */
+.link-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.link-row input {
+  flex: 1;
+}
+
+.copy-btn {
+  background: linear-gradient(90deg, #00ffff, #7f00ff);
+  border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* REVOKE */
+.revoke-btn {
+  background: #dc2626;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: white;
+}
+
+/* META */
+.meta {
+  margin-top: 8px;
+  font-size: 14px;
+}
+
+/* VIEW LOG */
+.views-log {
+  margin-top: 12px;
+}
+
+.views-log ul {
+  padding-left: 18px;
+}
+
+.viewer {
+  color: #00ffff;
+}
+
+.time {
+  margin-left: 8px;
+  font-size: 12px;
+  color: #aab0ff;
+}
+
+.muted {
+  color: #aab0ff;
+}
+
+.loading,
+.empty-text {
+  text-align: center;
+  margin-top: 2rem;
+}
+
+/* =====================================================
+   📱 MOBILE — SAFE TOP GAP (FINAL)
+   ===================================================== */
+@media (max-width: 768px) {
+  .dashboard {
+    padding-top: 3.70rem;   /* ⬅ increased slightly to avoid browser bar overlap */
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
