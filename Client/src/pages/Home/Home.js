@@ -7,7 +7,7 @@ import { encryptFile } from "../../crypto/encrypt";
 import { decryptData } from "../../crypto/decrypt";
 import DisplayImage from "../../components/DisplayImage";
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+const API_BASE_URL = process.env.REACT_APP_API_URL;
 
 // 🔹 helper to allow only digits or a single leading "-"
 const isNumericInput = (val) => /^-?\d*$/.test(val);

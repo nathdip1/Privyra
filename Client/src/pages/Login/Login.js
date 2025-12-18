@@ -5,7 +5,7 @@ import { validateUsername, validatePassword } from "../../utils/validators";
 import { AuthContext } from "../../context/AuthContext";
 import "../../styles/auth.css";
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+const API_BASE_URL = process.env.REACT_APP_API_URL;
 
 function Login() {
   const navigate = useNavigate();

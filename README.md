@@ -24,6 +24,7 @@ Privyra:
 │   README.md
 │
 ├───Client
+│   │   .env
 │   │   .gitignore
 │   │   package-lock.json
 │   │   package.json
@@ -42,23 +43,14 @@ Privyra:
 │       ├───api
 │       │       axios.js
 │       │
-│       ├───assets
-│       │   ├───icons
-│       │   └───images
 │       ├───components
 │       │       DisplayImage.js
 │       │       Header.js
 │       │       Layout.js
-│       │       Loader.js
 │       │       ProtectedRoute.js
-│       │       SecureLinkBox.js
-│       │       ShareLogCard.js
-│       │       StopShareButton.js
-│       │       UploadBox.js
 │       │
 │       ├───context
 │       │       AuthContext.js
-│       │       UserContext.js
 │       │
 │       ├───crypto
 │       │       decrypt.js
@@ -74,9 +66,6 @@ Privyra:
 │       │   ├───Login
 │       │   │       Login.js
 │       │   │
-│       │   ├───Messages
-│       │   │       Messages.js
-│       │   │
 │       │   ├───Notifications
 │       │   │       Notifications.js
 │       │   │
@@ -86,17 +75,8 @@ Privyra:
 │       │   ├───Signup
 │       │   │       Signup.js
 │       │   │
-│       │   ├───Terms
-│       │   │       Terms.js
-│       │   │
-│       │   └───View
-│       │           ViewImage.js
-│       │
-│       ├───services
-│       │       authService.js
-│       │       shareService.js
-│       │       uploadService.js
-│       │       viewService.js
+│       │   └───Terms
+│       │           Terms.js
 │       │
 │       ├───styles
 │       │       auth.css
@@ -107,7 +87,6 @@ Privyra:
 │       │
 │       └───utils
 │               api.js
-│               pointsCalculator.js
 │               validators.js
 │
 └───Server
@@ -116,44 +95,36 @@ Privyra:
     │   package.json
     │   README.md
     │
-    ├───src
-    │   │   server.js
-    │   │
-    │   ├───config
-    │   │       cloudinary.js
-    │   │       db.js
-    │   │
-    │   ├───controllers
-    │   │       auth.controller.js
-    │   │       dashboard.controller.js
-    │   │       image.controller.js
-    │   │       share.controller.js
-    │   │       upload.controller.js
-    │   │       view.controller.js
-    │   │
-    │   ├───middlewares
-    │   │       authMiddleware.js
-    │   │       expiryCheck.js
-    │   │       rateLimiter.js
-    │   │
-    │   ├───models
-    │   │       Image.js
-    │   │       upload.model.js
-    │   │       User.js
-    │   │
-    │   ├───routes
-    │   │       auth.routes.js
-    │   │       dashboard.routes.js
-    │   │       image.routes.js
-    │   │       share.routes.js
-    │   │       upload.routes.js
-    │   │       view.routes.js
-    │   │
-    │   └───utils
-    │           gridfs.js
-    │           hash.js
-    │
-    └───uploads
+    └───src
+        │   server.js
+        │
+        ├───config
+        │       db.js
+        │
+        ├───controllers
+        │       auth.controller.js
+        │       dashboard.controller.js
+        │       image.controller.js
+        │       upload.controller.js
+        │       view.controller.js
+        │
+        ├───middlewares
+        │       authMiddleware.js
+        │
+        ├───models
+        │       Image.js
+        │       upload.model.js
+        │       User.js
+        │
+        ├───routes
+        │       auth.routes.js
+        │       dashboard.routes.js
+        │       image.routes.js
+        │       upload.routes.js
+        │       view.routes.js
+        │
+        └───utils
+                gridfs.js
 
 Once you read all these and understand my app and the requirements then I will ask you my existing problem or any feature that I want to build.
 
