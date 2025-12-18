@@ -159,16 +159,18 @@ formData.append(
   "encryptedFile",
   new Blob([encrypted.encryptedBytes], {
     type: "application/octet-stream",
-  })
+  }),
+  "encrypted.bin" // ✅ REQUIRED for mobile
 );
 
-// 🔐 binary IV
 formData.append(
   "iv",
   new Blob([encrypted.iv], {
     type: "application/octet-stream",
-  })
+  }),
+  "iv.bin" // ✅ REQUIRED for mobile
 );
+
 
 // metadata (unchanged)
 formData.append("mimeType", encrypted.mimeType);
@@ -187,7 +189,9 @@ const res = await api.post("/api/upload", formData, {
   headers: {
     Authorization: `Bearer ${currentUser.token}`,
   },
+  transformRequest: (data) => data,
 });
+
 
 const encodedWatermark = encodeURIComponent(watermark || "");
 const finalLink =

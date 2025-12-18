@@ -5,7 +5,15 @@ import { authMiddleware } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
+/*
+  ✅ IMPORTANT
+  Explicit memory storage is REQUIRED for:
+  - mobile browsers
+  - binary Blob uploads
+  - encrypted payloads
+*/
 const upload = multer({
+  storage: multer.memoryStorage(), // 🔴 CRITICAL FIX
   limits: {
     fileSize: 25 * 1024 * 1024, // 25MB
   },

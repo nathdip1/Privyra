@@ -16,53 +16,42 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 /* ===============================
-   CORS — FINAL & CORRECT
+   ✅ ENV-BASED CORS (DEV + PROD)
 =============================== */
-
-const allowedOrigins = [
-  "http://localhost:3000",
-  "http://192.168.1.19:3000",
-];
+const allowedOrigins = process.env.CORS_ORIGINS
+  ? process.env.CORS_ORIGINS.split(",")
+  : [];
 
 app.use(
   cors({
     origin: function (origin, callback) {
+      // allow mobile WebView / curl / Postman
       if (!origin) return callback(null, true);
-
-      const allowedOrigins = [
-        "http://localhost:3000",
-        "http://192.168.1.19:3000",
-      ];
 
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
 
-      return callback(new Error("Not allowed by CORS"));
+      return callback(new Error("CORS not allowed"), false);
     },
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
-
-    // 🔴 REQUIRED FOR VIEW
     exposedHeaders: ["X-IV", "X-Mime-Type"],
-
-    credentials: false,
-    optionsSuccessStatus: 200,
+    credentials: true,
   })
 );
 
+// Required for mobile preflight
+app.options("*", cors());
 
 /* ===============================
-   BODY PARSERS
+   BODY PARSER
 =============================== */
-
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
 /* ===============================
    ROUTES
 =============================== */
-
 app.use("/api/auth", authRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api/view", viewRoutes);
@@ -70,23 +59,19 @@ app.use("/api/images", imageRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 
 /* ===============================
-   DATABASE
+   DB
 =============================== */
-
 mongoose
   .connect(process.env.MONGO_URI)
   .then((conn) => {
     console.log("MongoDB connected");
     initGridFS(conn.connection);
   })
-  .catch((err) => {
-    console.error("MongoDB connection error:", err);
-  });
+  .catch((err) => console.error("Mongo error:", err));
 
 /* ===============================
-   START SERVER
+   START
 =============================== */
-
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server running on port ${PORT}`);
 });

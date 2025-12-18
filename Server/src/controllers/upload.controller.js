@@ -35,6 +35,14 @@ export const uploadImage = async (req, res) => {
     =============================== */
     const encryptedFile = req.files?.encryptedFile?.[0];
     const ivFile = req.files?.iv?.[0];
+    console.log("REQ FILE KEYS:", Object.keys(req.files || {}));
+console.log(
+  "Encrypted file size:",
+  encryptedFile?.size,
+  "IV size:",
+  ivFile?.size
+);
+
 
     if (!encryptedFile || !ivFile || !mimeType) {
       return res.status(400).json({
