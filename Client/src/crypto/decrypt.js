@@ -1,14 +1,16 @@
 /*
   Client-side decryption (ZERO-KNOWLEDGE)
   AES-256-GCM
-  - Imports key from URL fragment
-  - Decrypts encrypted bytes
+  - Imports key from URL fragment (base64)
+  - Decrypts binary encrypted bytes
   - Returns Uint8Array for rendering
 */
 
 /* ===============================
    HELPERS
 =============================== */
+
+// base64 → Uint8Array (ONLY for small key material)
 const base64ToBuf = (b64) =>
   Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
 
@@ -16,6 +18,10 @@ const base64ToBuf = (b64) =>
    KEY IMPORT
 =============================== */
 export const importDecryptionKey = async (base64Key) => {
+  if (!base64Key) {
+    throw new Error("Missing decryption key");
+  }
+
   const rawKey = base64ToBuf(base64Key);
 
   return crypto.subtle.importKey(
@@ -28,14 +34,14 @@ export const importDecryptionKey = async (base64Key) => {
 };
 
 /* ===============================
-   DECRYPT DATA
+   DECRYPT DATA (BINARY)
 =============================== */
 export const decryptData = async ({
-  encryptedData,
+  encryptedBytes,
   iv,
   key,
 }) => {
-  if (!encryptedData || !iv || !key) {
+  if (!encryptedBytes || !iv || !key) {
     throw new Error("Missing decryption parameters");
   }
 
@@ -44,10 +50,12 @@ export const decryptData = async ({
   const decryptedBuffer = await crypto.subtle.decrypt(
     {
       name: "AES-GCM",
-      iv: base64ToBuf(iv),
+      iv: iv instanceof Uint8Array ? iv : new Uint8Array(iv),
     },
     cryptoKey,
-    base64ToBuf(encryptedData)
+    encryptedBytes instanceof Uint8Array
+      ? encryptedBytes
+      : new Uint8Array(encryptedBytes)
   );
 
   return new Uint8Array(decryptedBuffer);

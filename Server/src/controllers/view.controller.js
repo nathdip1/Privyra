@@ -3,10 +3,10 @@ import { getGridFSBucket } from "../utils/gridfs.js";
 import mongoose from "mongoose";
 
 /*
-  ZERO-KNOWLEDGE VIEW CONTROLLER
+  ZERO-KNOWLEDGE VIEW CONTROLLER (BINARY)
   - Auth required
   - Enforces expiry / revoke / maxViews
-  - Streams encrypted bytes
+  - Streams encrypted bytes (NO base64)
   - NEVER decrypts
 */
 export const viewImage = async (req, res) => {
@@ -84,7 +84,7 @@ export const viewImage = async (req, res) => {
     await upload.save();
 
     /* ===============================
-       STREAM ENCRYPTED DATA
+       STREAM ENCRYPTED DATA (BINARY)
     =============================== */
     const bucket = getGridFSBucket();
 
@@ -96,12 +96,30 @@ export const viewImage = async (req, res) => {
 
     const fileId = new mongoose.Types.ObjectId(upload.fileId);
     const downloadStream = bucket.openDownloadStream(fileId);
+    req.on("close", () => {
+  downloadStream.destroy();
+});
 
-    const chunks = [];
 
-    downloadStream.on("data", (chunk) => {
-      chunks.push(chunk);
-    });
+    // 🔐 Metadata in headers (small, safe)
+    // 🔐 Normalize IV safely (AES-GCM requires exactly 12 bytes)
+const ivBuffer = Buffer.isBuffer(upload.iv)
+  ? upload.iv
+  : Buffer.from(upload.iv);
+
+// 🔐 Enforce AES-GCM IV length strictly
+if (ivBuffer.length !== 12) {
+  return res.status(410).json({
+    error:
+      "This link was generated using an older encryption format and is no longer supported. Please upload the image again.",
+  });
+}
+
+res.setHeader("Content-Type", "application/octet-stream");
+res.setHeader("X-IV", ivBuffer.toString("base64"));
+res.setHeader("X-Mime-Type", upload.mimeType);
+
+
 
     downloadStream.on("error", () => {
       return res.status(404).json({
@@ -109,15 +127,8 @@ export const viewImage = async (req, res) => {
       });
     });
 
-    downloadStream.on("end", () => {
-      const encryptedBuffer = Buffer.concat(chunks);
-
-      res.json({
-        encryptedData: encryptedBuffer.toString("base64"),
-        iv: upload.iv,
-        mimeType: upload.mimeType,
-      });
-    });
+    // 🔐 Pipe encrypted bytes directly
+    downloadStream.pipe(res);
   } catch (err) {
     console.error("VIEW ERROR:", err);
     return res.status(500).json({

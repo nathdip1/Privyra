@@ -7,6 +7,7 @@ function DisplayImage({ imageUrl, watermark }) {
     if (!imageUrl) return;
 
     const canvas = canvasRef.current;
+    canvas.toDataURL = () => null;
     const ctx = canvas.getContext("2d");
     const img = new Image();
 

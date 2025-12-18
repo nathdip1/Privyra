@@ -5,13 +5,20 @@ import { authMiddleware } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
-/*
-  Multer is kept ONLY to parse form fields.
-  Encrypted data is NOT treated as a file.
-*/
-const upload = multer();
+const upload = multer({
+  limits: {
+    fileSize: 25 * 1024 * 1024, // 25MB
+  },
+});
 
-// ✅ auth → multer (no files) → controller
-router.post("/", authMiddleware, upload.none(), uploadImage);
+router.post(
+  "/",
+  authMiddleware,
+  upload.fields([
+    { name: "encryptedFile", maxCount: 1 },
+    { name: "iv", maxCount: 1 },
+  ]),
+  uploadImage
+);
 
 export default router;

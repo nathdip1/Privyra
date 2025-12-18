@@ -41,7 +41,7 @@ const uploadSchema = new mongoose.Schema(
 
     // ✅ CRITICAL FIX
     iv: {
-      type: String,
+      type: Buffer,
       required: true,
     },
 

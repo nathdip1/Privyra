@@ -1,13 +1,11 @@
 import React, { useState, useContext, useEffect } from "react";
-import axios from "axios";
+import api from "../../api/axios";
 import { AuthContext } from "../../context/AuthContext";
 import "../../styles/home.css";
 import Header from "../../components/Header";
 import { encryptFile } from "../../crypto/encrypt";
 import { decryptData } from "../../crypto/decrypt";
 import DisplayImage from "../../components/DisplayImage";
-
-const API_BASE_URL = process.env.REACT_APP_API_URL;
 
 // 🔹 helper to allow only digits or a single leading "-"
 const isNumericInput = (val) => /^-?\d*$/.test(val);
@@ -26,6 +24,14 @@ function Home() {
 
   const [warning, setWarning] = useState("");
   const [watermark, setWatermark] = useState("");
+  useEffect(() => {
+  return () => {
+    if (displayedImage) {
+      URL.revokeObjectURL(displayedImage);
+    }
+  };
+}, [displayedImage]);
+
 
   useEffect(() => {
     const blur = () => (document.body.style.filter = "blur(12px)");
@@ -130,32 +136,64 @@ function Home() {
      UPLOAD (ENCRYPT → GRIDFS)
   =============================== */
   const handleUpload = async () => {
-    if (!file) return alert("Please select an image");
+    if (!file) {
+  alert("Please select an image");
+  return;
+}
+
+if (file.size > 10 * 1024 * 1024) {
+  alert("Image too large. Maximum allowed size is 10MB.");
+  return;
+}
+
     if (!currentUser?.token) return alert("Login required");
 
     setLoading(true);
     try {
       const encrypted = await encryptFile(file);
 
-      const formData = new FormData();
-      formData.append("encryptedData", encrypted.data);
-      formData.append("iv", encrypted.iv);
-      formData.append("mimeType", encrypted.mimeType);
-      formData.append("originalSize", encrypted.originalSize);
+const formData = new FormData();
 
-      if (expiresInMinutes)
-        formData.append("expiresInMinutes", expiresInMinutes);
-      if (maxViews) formData.append("maxViews", maxViews);
+// 🔐 binary encrypted image
+formData.append(
+  "encryptedFile",
+  new Blob([encrypted.encryptedBytes], {
+    type: "application/octet-stream",
+  })
+);
 
-      const res = await axios.post(`${API_BASE_URL}/api/upload`, formData, {
-        headers: {
-          Authorization: `Bearer ${currentUser.token}`,
-        },
-      });
+// 🔐 binary IV
+formData.append(
+  "iv",
+  new Blob([encrypted.iv], {
+    type: "application/octet-stream",
+  })
+);
 
-      const finalLink = `${window.location.origin}${res.data.viewLink}#${encrypted.key}`;
+// metadata (unchanged)
+formData.append("mimeType", encrypted.mimeType);
+formData.append("originalSize", encrypted.originalSize);
 
-      setSecureLink(finalLink);
+if (expiresInMinutes) {
+  formData.append("expiresInMinutes", expiresInMinutes);
+}
+
+if (maxViews) {
+  formData.append("maxViews", maxViews);
+}
+
+// ✅ IMPORTANT: use your api instance if available
+const res = await api.post("/api/upload", formData, {
+  headers: {
+    Authorization: `Bearer ${currentUser.token}`,
+  },
+});
+
+const finalLink =
+  `${window.location.origin}${res.data.viewLink}#${encrypted.key}`;
+
+setSecureLink(finalLink);
+
     } catch (err) {
       console.error("UPLOAD ERROR:", err.response?.data || err);
       alert(err.response?.data?.error || "Upload failed");
@@ -190,42 +228,75 @@ function Home() {
      VIEW → DECRYPT → DISPLAY
   =============================== */
   const handleDisplay = async () => {
-    if (!linkInput) return alert("Enter secure link");
+  if (!linkInput) return alert("Enter secure link");
 
-    try {
-      const url = new URL(linkInput);
-      const key = url.hash.replace("#", "");
-      if (!key) return alert("Invalid secure link (missing key)");
+  try {
+    const url = new URL(linkInput);
+    const key = url.hash.replace("#", "");
+    if (!key) return alert("Invalid secure link (missing key)");
 
-      setLoading(true);
+    setLoading(true);
 
-      const res = await axios.get(`${API_BASE_URL}${url.pathname}`, {
-        headers: {
-          Authorization: `Bearer ${currentUser.token}`,
-        },
-      });
+    // 🔐 Fetch encrypted bytes as binary
+    const res = await api.get(url.pathname, {
+  responseType: "arraybuffer",
+  headers: {
+    Authorization: `Bearer ${currentUser.token}`,
+  },
+});
 
-      const { encryptedData, iv, mimeType } = res.data;
 
-      const decryptedBytes = await decryptData({
-        encryptedData,
-        iv,
-        key,
-      });
+    // 🔐 Extract binary encrypted data
+    const encryptedBytes = new Uint8Array(res.data);
 
-      const imageBlob = new Blob([decryptedBytes], {
-        type: mimeType,
-      });
-      const imageUrl = URL.createObjectURL(imageBlob);
+    // 🔐 Extract IV from headers (base64 → Uint8Array)
+   // 🔐 Read IV from exposed headers (axios lowercases keys)
+const ivBase64 =
+  res.headers["x-iv"] || res.headers["X-IV"];
 
-      setDisplayedImage(imageUrl);
-    } catch (err) {
-      console.error("VIEW ERROR:", err);
-      alert("Cannot display image");
-    } finally {
-      setLoading(false);
-    }
-  };
+if (!ivBase64) {
+  console.error("Response headers:", res.headers);
+  throw new Error("Missing IV header");
+}
+
+const ivBytes = Uint8Array.from(atob(ivBase64), (c) =>
+  c.charCodeAt(0)
+);
+
+// 🔴 AES-GCM requires exactly 12 bytes
+if (ivBytes.length !== 12) {
+  console.error("Invalid IV length:", ivBytes.length);
+  throw new Error("Invalid IV length");
+}
+
+const iv = ivBytes;
+
+
+    // 🔐 Decrypt (binary → binary)
+    const decryptedBytes = await decryptData({
+      encryptedBytes,
+      iv,
+      key,
+    });
+
+    // 🔐 Render image safely
+    const mimeType =
+      res.headers["x-mime-type"] || "image/*";
+
+    const imageBlob = new Blob([decryptedBytes], {
+      type: mimeType,
+    });
+
+    const imageUrl = URL.createObjectURL(imageBlob);
+    setDisplayedImage(imageUrl);
+  } catch (err) {
+    console.error("VIEW ERROR:", err);
+    alert("Cannot display image");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <>
