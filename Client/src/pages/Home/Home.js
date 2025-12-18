@@ -189,8 +189,9 @@ const res = await api.post("/api/upload", formData, {
   },
 });
 
+const encodedWatermark = encodeURIComponent(watermark || "");
 const finalLink =
-  `${window.location.origin}${res.data.viewLink}#${encrypted.key}`;
+  `${window.location.origin}${res.data.viewLink}#${encrypted.key}|wm=${encodedWatermark}`;
 
 setSecureLink(finalLink);
 
@@ -232,8 +233,22 @@ setSecureLink(finalLink);
 
   try {
     const url = new URL(linkInput);
-    const key = url.hash.replace("#", "");
-    if (!key) return alert("Invalid secure link (missing key)");
+    const hash = url.hash.replace("#", "");
+const [key, wmPart] = hash.split("|");
+
+if (!key) {
+  alert("Invalid secure link (missing key)");
+  return;
+}
+
+let extractedWatermark = "";
+if (wmPart?.startsWith("wm=")) {
+  extractedWatermark = decodeURIComponent(wmPart.slice(3));
+}
+
+// store watermark for rendering
+setWatermark(extractedWatermark);
+
 
     setLoading(true);
 
