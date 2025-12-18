@@ -3,6 +3,7 @@ import React, { useState, useContext } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { validateUsername, validatePassword } from "../../utils/validators";
 import { AuthContext } from "../../context/AuthContext";
+import api from "../../api/axios";
 import "../../styles/auth.css";
 
 function Signup() {
@@ -15,9 +16,37 @@ function Signup() {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [errors, setErrors] = useState({});
   const [hovered, setHovered] = useState(false);
+  const [loading, setLoading] = useState(false); // ✅ new
 
+  /* ===============================
+     PASSWORD STRENGTH (SIMPLE + SAFE)
+  =============================== */
+  const getPasswordStrength = () => {
+    if (!password) return null;
+
+    let score = 0;
+    if (password.length >= 8) score++;
+    if (/[A-Z]/.test(password)) score++;
+    if (/[a-z]/.test(password)) score++;
+    if (/[0-9]/.test(password)) score++;
+    if (/[^A-Za-z0-9]/.test(password)) score++;
+
+    if (score <= 2) return { label: "Weak", color: "#ff4d4f" };
+    if (score === 3 || score === 4)
+      return { label: "Medium", color: "#faad14" };
+    return { label: "Strong", color: "#52c41a" };
+  };
+
+  const passwordStrength = getPasswordStrength();
+
+  /* ===============================
+     SUBMIT HANDLER
+  =============================== */
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (loading) return; // ✅ prevent duplicate submit
+
     const newErrors = {};
 
     if (!username) newErrors.username = "Username is required";
@@ -39,23 +68,27 @@ function Signup() {
     if (Object.keys(newErrors).length !== 0) return;
 
     try {
-      const res = await fetch("http://localhost:5000/api/auth/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
+      setLoading(true);
+
+      const cleanUsername = username.trim();
+      const cleanPassword = password.trim();
+
+      const res = await api.post("/api/auth/signup", {
+        username: cleanUsername,
+        password: cleanPassword,
       });
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        setErrors({ username: data.message });
-        return;
-      }
+      const data = res.data;
 
       login({ username: data.username, token: data.token });
       navigate("/login");
     } catch (err) {
-      setErrors({ server: "Server error. Try again later." });
+      const message =
+        err.response?.data?.error ||
+        "Server error. Try again later.";
+      setErrors({ server: message });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -87,7 +120,9 @@ function Signup() {
             value={username}
             onChange={(e) => setUsername(e.target.value)}
           />
-          {errors.username && <p className="error">{errors.username}</p>}
+          {errors.username && (
+            <p className="error">{errors.username}</p>
+          )}
 
           <input
             type="password"
@@ -95,40 +130,79 @@ function Signup() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-          {errors.password && <p className="error">{errors.password}</p>}
+
+          {/* ✅ Password strength indicator */}
+          {passwordStrength && (
+            <p
+              style={{
+                fontSize: "12px",
+                marginTop: "4px",
+                color: passwordStrength.color,
+              }}
+            >
+              Password strength: {passwordStrength.label}
+            </p>
+          )}
+
+          {errors.password && (
+            <p className="error">{errors.password}</p>
+          )}
 
           <input
             type="password"
             placeholder="Confirm Password"
             value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
+            onChange={(e) =>
+              setConfirmPassword(e.target.value)
+            }
           />
           {errors.confirmPassword && (
-            <p className="error">{errors.confirmPassword}</p>
+            <p className="error">
+              {errors.confirmPassword}
+            </p>
           )}
 
-          {/* ✅ FIXED TERMS ALIGNMENT */}
+          {/* Terms */}
           <div className="terms-row">
             <label className="terms-label">
               <input
                 type="checkbox"
                 checked={termsAccepted}
-                onChange={(e) => setTermsAccepted(e.target.checked)}
+                onChange={(e) =>
+                  setTermsAccepted(e.target.checked)
+                }
               />
               <span>
-                I accept the <Link to="/terms">Terms & Conditions</Link>
+                I accept the{" "}
+                <Link to="/terms">Terms & Conditions</Link>
               </span>
             </label>
           </div>
-          {errors.terms && <p className="error">{errors.terms}</p>}
+          {errors.terms && (
+            <p className="error">{errors.terms}</p>
+          )}
 
-          <button type="submit" className="primary-btn">
-            Sign Up
+          {errors.server && (
+            <p className="error">{errors.server}</p>
+          )}
+
+          {/* ✅ Disabled while loading */}
+          <button
+            type="submit"
+            className="primary-btn"
+            disabled={loading}
+            style={{
+              opacity: loading ? 0.6 : 1,
+              cursor: loading ? "not-allowed" : "pointer",
+            }}
+          >
+            {loading ? "Signing Up..." : "Sign Up"}
           </button>
         </form>
 
         <p className="auth-switch">
-          Already have an account? <Link to="/login">Login</Link>
+          Already have an account?{" "}
+          <Link to="/login">Login</Link>
         </p>
       </div>
     </div>

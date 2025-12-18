@@ -21,7 +21,7 @@ function Home() {
   const [linkInput, setLinkInput] = useState("");
   const [displayedImage, setDisplayedImage] = useState(null);
   const [loading, setLoading] = useState(false);
-
+  const [viewError, setViewError] = useState("");
   const [warning, setWarning] = useState("");
   const [watermark, setWatermark] = useState("");
   useEffect(() => {
@@ -228,9 +228,10 @@ setSecureLink(finalLink);
   /* ===============================
      VIEW → DECRYPT → DISPLAY
   =============================== */
+  
   const handleDisplay = async () => {
   if (!linkInput) return alert("Enter secure link");
-
+    setViewError("");
   try {
     const url = new URL(linkInput);
     const hash = url.hash.replace("#", "");
@@ -305,11 +306,44 @@ const iv = ivBytes;
     const imageUrl = URL.createObjectURL(imageBlob);
     setDisplayedImage(imageUrl);
   } catch (err) {
-    console.error("VIEW ERROR:", err);
-    alert("Cannot display image");
-  } finally {
-    setLoading(false);
+  console.error("VIEW ERROR:", err);
+
+  let message = "Unable to display image.";
+
+  if (err.response) {
+    const status = err.response.status;
+
+    // 🔴 Decode ArrayBuffer error response
+    if (err.response.data instanceof ArrayBuffer) {
+      try {
+        const text = new TextDecoder().decode(err.response.data);
+        const parsed = JSON.parse(text);
+        message = parsed.error || message;
+      } catch {
+        // fallback if parsing fails
+        message = status === 410
+          ? "This secure link has expired."
+          : message;
+      }
+    } else if (typeof err.response.data === "object") {
+      message = err.response.data.error || message;
+    }
+
+    if (status === 401) {
+      message = "Please log in to view this secure image.";
+    } else if (status === 404) {
+      message = "Invalid or broken secure link.";
+    }
+  } else {
+    message = "Network error. Please try again.";
   }
+
+  setViewError(message);
+} finally {
+  setLoading(false);
+}
+
+
 };
 
 
@@ -427,12 +461,26 @@ const iv = ivBytes;
           />
 
           <button className="success-btn" onClick={handleDisplay}>
-            Display Image
-          </button>
+  Display Image
+</button>
 
-          {displayedImage && (
-            <DisplayImage imageUrl={displayedImage} watermark={watermark} />
-          )}
+{viewError && (
+  <p
+    style={{
+      color: "#ff4d4f",
+      fontSize: "13px",
+      marginTop: "8px",
+      textAlign: "center",
+    }}
+  >
+    {viewError}
+  </p>
+)}
+
+{displayedImage && (
+  <DisplayImage imageUrl={displayedImage} watermark={watermark} />
+)}
+
         </div>
       </div>
     </>

@@ -20,6 +20,11 @@ function Header() {
     setOpen(false);
     navigate("/dashboard");
   };
+  const goToProfile = () => {
+  setOpen(false);
+  navigate("/profile");
+};
+
 
   // 🔹 Close dropdown on outside click
   useEffect(() => {
@@ -83,21 +88,29 @@ function Header() {
           </div>
 
           {open && (
-            <div className="profile-dropdown">
-              <button onClick={goToDashboard}>
-                Dashboard
-              </button>
+  <div className="profile-dropdown">
+    {/* ✅ NEW: Profile option */}
+    <button onClick={goToProfile}>
+      Profile
+    </button>
 
-              <div className="dropdown-divider" />
+    <div className="dropdown-divider" />
 
-              <button
-                className="logout-btn"
-                onClick={handleLogout}
-              >
-                Logout
-              </button>
-            </div>
-          )}
+    <button onClick={goToDashboard}>
+      Dashboard
+    </button>
+
+    <div className="dropdown-divider" />
+
+    <button
+      className="logout-btn"
+      onClick={handleLogout}
+    >
+      Logout
+    </button>
+  </div>
+)}
+
         </div>
       )}
     </header>
