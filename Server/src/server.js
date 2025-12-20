@@ -30,7 +30,13 @@ const corsOptions = {
     // allow server-to-server, mobile apps, curl, postman
     if (!origin) return callback(null, true);
 
+    // exact matches (localhost, prod domain)
     if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    // allow all Vercel preview deployments
+    if (origin.endsWith(".vercel.app")) {
       return callback(null, true);
     }
 
@@ -39,11 +45,12 @@ const corsOptions = {
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
-  exposedHeaders: ["X-IV", "X-Mime-Type"], // 🔑 REQUIRED for encryption flow
+  exposedHeaders: ["X-IV", "X-Mime-Type"],
 };
 
 app.use(cors(corsOptions));
 app.options("*", cors(corsOptions));
+
 
 /* ===============================
    BODY PARSER
