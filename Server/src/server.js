@@ -17,32 +17,33 @@ const PORT = process.env.PORT || 5000;
 
 /* ===============================
    ✅ ENV-BASED CORS (DEV + PROD)
+   - SAME rules for POST + OPTIONS
+   - Allows crypto headers
+   - Works for browser, mobile, Postman
 =============================== */
 const allowedOrigins = process.env.CORS_ORIGINS
   ? process.env.CORS_ORIGINS.split(",")
   : [];
 
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      // allow mobile WebView / curl / Postman
-      if (!origin) return callback(null, true);
+const corsOptions = {
+  origin: function (origin, callback) {
+    // allow server-to-server, mobile apps, curl, postman
+    if (!origin) return callback(null, true);
 
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
 
-      return callback(new Error("CORS not allowed"), false);
-    },
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    exposedHeaders: ["X-IV", "X-Mime-Type"],
-    credentials: true,
-  })
-);
+    return callback(null, false);
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  exposedHeaders: ["X-IV", "X-Mime-Type"], // 🔑 REQUIRED for encryption flow
+};
 
-// Required for mobile preflight
-app.options("*", cors());
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
 
 /* ===============================
    BODY PARSER
